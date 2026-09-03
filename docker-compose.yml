@@ -1,0 +1,77 @@
+# =============================================================================
+# NeerNetra — Docker Compose
+# =============================================================================
+# Services: PostgreSQL+PostGIS, FastAPI backend, React frontend
+# =============================================================================
+
+version: "3.9"
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL + PostGIS
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgis/postgis:15-3.4
+    container_name: neernetra-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-neernetra}
+      POSTGRES_USER: ${POSTGRES_USER:-neernetra}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-neernetra_dev_2026}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-neernetra}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # FastAPI Backend
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: neernetra-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-neernetra}:${POSTGRES_PASSWORD:-neernetra_dev_2026}@db:5432/${POSTGRES_DB:-neernetra}
+      OPEN_METEO_BASE_URL: ${OPEN_METEO_BASE_URL:-https://api.open-meteo.com/v1}
+      PILOT_REGION_LAT: ${PILOT_REGION_LAT:-30.735}
+      PILOT_REGION_LON: ${PILOT_REGION_LON:-79.066}
+      PILOT_REGION_NAME: ${PILOT_REGION_NAME:-Kedarnath}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/app/backend
+      - ./ml:/app/ml
+      - ./geospatial:/app/geospatial
+      - ./data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # React Frontend (Vite dev server)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: neernetra-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+    driver: local

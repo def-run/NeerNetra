@@ -1,0 +1,163 @@
+{
+  "type": "FeatureCollection",
+  "name": "kedarnath_road_network",
+  "description": "Major road segments along the Kedarnath-Rudraprayag corridor. Simplified representation for flood exposure analysis.",
+  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4326" } },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "R001",
+        "name": "Rudraprayag-Agastmuni Road (NH-107)",
+        "road_type": "national_highway",
+        "surface": "paved",
+        "width_m": 7.0,
+        "elevation_range_m": "610-1000",
+        "flood_vulnerability": "medium",
+        "importance": "critical"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [78.9800, 30.2840],
+          [78.9900, 30.3200],
+          [79.0000, 30.3800],
+          [79.0100, 30.4300],
+          [79.0200, 30.4800],
+          [79.0260, 30.5260]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "R002",
+        "name": "Agastmuni-Guptkashi Road (NH-107)",
+        "road_type": "national_highway",
+        "surface": "paved",
+        "width_m": 6.5,
+        "elevation_range_m": "1000-1319",
+        "flood_vulnerability": "high",
+        "importance": "critical"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [79.0260, 30.5260],
+          [79.0350, 30.5280],
+          [79.0500, 30.5290],
+          [79.0700, 30.5300]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "R003",
+        "name": "Guptkashi-Phata Road",
+        "road_type": "state_highway",
+        "surface": "paved",
+        "width_m": 5.5,
+        "elevation_range_m": "1319-1524",
+        "flood_vulnerability": "high",
+        "importance": "high"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [79.0700, 30.5300],
+          [79.0650, 30.5450],
+          [79.0600, 30.5700]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "R004",
+        "name": "Phata-Sonprayag Road",
+        "road_type": "state_highway",
+        "surface": "paved",
+        "width_m": 5.0,
+        "elevation_range_m": "1524-1829",
+        "flood_vulnerability": "very_high",
+        "importance": "high"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [79.0600, 30.5700],
+          [79.0620, 30.5900],
+          [79.0650, 30.6100],
+          [79.0700, 30.6280]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "R005",
+        "name": "Sonprayag-Gaurikund Road",
+        "road_type": "district_road",
+        "surface": "paved",
+        "width_m": 4.5,
+        "elevation_range_m": "1829-1982",
+        "flood_vulnerability": "very_high",
+        "importance": "critical"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [79.0700, 30.6280],
+          [79.0750, 30.6350],
+          [79.0800, 30.6450],
+          [79.0900, 30.6560]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "R006",
+        "name": "Gaurikund-Kedarnath Trek Route",
+        "road_type": "trek_path",
+        "surface": "unpaved_stone",
+        "width_m": 3.0,
+        "elevation_range_m": "1982-3583",
+        "flood_vulnerability": "extreme",
+        "importance": "critical"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [79.0900, 30.6560],
+          [79.0850, 30.6700],
+          [79.0800, 30.6900],
+          [79.0750, 30.7100],
+          [79.0669, 30.7346]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "R007",
+        "name": "Kalimath Side Road",
+        "road_type": "district_road",
+        "surface": "paved",
+        "width_m": 4.0,
+        "elevation_range_m": "1319-1463",
+        "flood_vulnerability": "medium",
+        "importance": "medium"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [79.0700, 30.5300],
+          [79.0550, 30.5400],
+          [79.0400, 30.5500]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "type": "FeatureCollection",
+  "name": "kedarnath_bridges",
+  "description": "Major bridges along the Kedarnath-Rudraprayag corridor. Used for flood exposure and infrastructure risk analysis.",
+  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::4326" } },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "B001",
+        "name": "Rudraprayag Sangam Bridge",
+        "bridge_type": "concrete",
+        "span_m": 85,
+        "river": "Alaknanda-Mandakini Confluence",
+        "road_id": "R001",
+        "flood_vulnerability": "high",
+        "importance": "critical",
+        "year_built": 2005
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [78.9800, 30.2840]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "B002",
+        "name": "Agastmuni Bridge",
+        "bridge_type": "concrete",
+        "span_m": 45,
+        "river": "Mandakini",
+        "road_id": "R001",
+        "flood_vulnerability": "medium",
+        "importance": "high",
+        "year_built": 1998
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.0260, 30.5260]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "B003",
+        "name": "Guptkashi River Crossing",
+        "bridge_type": "concrete",
+        "span_m": 35,
+        "river": "Mandakini tributary",
+        "road_id": "R002",
+        "flood_vulnerability": "high",
+        "importance": "high",
+        "year_built": 2010
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.0700, 30.5300]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "B004",
+        "name": "Phata Suspension Bridge",
+        "bridge_type": "suspension",
+        "span_m": 55,
+        "river": "Mandakini",
+        "road_id": "R003",
+        "flood_vulnerability": "very_high",
+        "importance": "high",
+        "year_built": 2012
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.0600, 30.5700]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "B005",
+        "name": "Sonprayag Bridge",
+        "bridge_type": "bailey",
+        "span_m": 40,
+        "river": "Mandakini-Basuki confluence",
+        "road_id": "R004",
+        "flood_vulnerability": "very_high",
+        "importance": "critical",
+        "year_built": 2014
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.0700, 30.6280]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "B006",
+        "name": "Gaurikund Nala Bridge",
+        "bridge_type": "concrete_slab",
+        "span_m": 20,
+        "river": "Mandakini side stream",
+        "road_id": "R005",
+        "flood_vulnerability": "extreme",
+        "importance": "critical",
+        "year_built": 2015
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.0900, 30.6560]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "B007",
+        "name": "Kalimath Footbridge",
+        "bridge_type": "footbridge",
+        "span_m": 15,
+        "river": "tributary stream",
+        "road_id": "R007",
+        "flood_vulnerability": "high",
+        "importance": "medium",
+        "year_built": 2008
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.0400, 30.5500]
+      }
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+# =============================================================================
+# NeerNetra — .gitignore
+# =============================================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+.venv/
+venv/
+env/
+ENV/
+
+# --- Node / React ---
+node_modules/
+frontend/node_modules/
+frontend/dist/
+.npm
+.eslintcache
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# --- Environment ---
+.env
+.env.local
+.env.*.local
+
+# --- Docker ---
+docker/volumes/
+
+# --- Database ---
+*.sql.bak
+
+# --- Data files (large) ---
+data/rainfall/*.hdf5
+data/rainfall/*.nc
+data/dem/*.tif
+data/dem/*.geotiff
+data/processed/*.parquet
+data/processed/*.csv
+*.tif
+*.geotiff
+*.hdf5
+*.nc
+
+# --- ML Models (large) ---
+ml/saved_models/*.pkl
+ml/saved_models/*.joblib
+ml/saved_models/*.json
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Misc ---
+*.bak
+*.tmp
+*.temp

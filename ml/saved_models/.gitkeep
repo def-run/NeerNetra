@@ -1,0 +1,3 @@
+# ML saved models directory
+# Trained models (.joblib, .pkl) will be stored here.
+# These files are excluded from version control via .gitignore.

@@ -1,0 +1,108 @@
+{
+  "region": "Kedarnath / Mandakini Valley, Uttarakhand",
+  "description": "Landslide susceptibility indicators for monitored locations. Based on terrain characteristics, geological surveys, and historical landslide records from GSI and NRSC.",
+  "coordinate_system": "EPSG:4326",
+  "susceptibility_scale": "0.0 (very low) to 1.0 (very high)",
+  "locations": [
+    {
+      "name": "Kedarnath",
+      "lat": 30.7346,
+      "lon": 79.0669,
+      "landslide_susceptibility": 0.85,
+      "factors": ["steep_slope", "glacial_moraine", "high_elevation", "freeze_thaw"],
+      "historical_events": 3,
+      "geology": "metamorphic_gneiss",
+      "vegetation_cover": "sparse_alpine"
+    },
+    {
+      "name": "Gaurikund",
+      "lat": 30.6560,
+      "lon": 79.0900,
+      "landslide_susceptibility": 0.78,
+      "factors": ["steep_slope", "river_bank_erosion", "heavy_rainfall_zone"],
+      "historical_events": 5,
+      "geology": "quartzite_schist",
+      "vegetation_cover": "moderate_forest"
+    },
+    {
+      "name": "Sonprayag",
+      "lat": 30.6280,
+      "lon": 79.0700,
+      "landslide_susceptibility": 0.72,
+      "factors": ["steep_valley", "river_confluence", "road_cut_instability"],
+      "historical_events": 4,
+      "geology": "phyllite_quartzite",
+      "vegetation_cover": "moderate_forest"
+    },
+    {
+      "name": "Rampur",
+      "lat": 30.6350,
+      "lon": 79.0520,
+      "landslide_susceptibility": 0.65,
+      "factors": ["moderate_slope", "weathered_rock"],
+      "historical_events": 2,
+      "geology": "phyllite",
+      "vegetation_cover": "dense_forest"
+    },
+    {
+      "name": "Sitapur",
+      "lat": 30.6100,
+      "lon": 79.0400,
+      "landslide_susceptibility": 0.55,
+      "factors": ["moderate_slope", "river_terrace"],
+      "historical_events": 1,
+      "geology": "alluvial_terrace",
+      "vegetation_cover": "dense_forest"
+    },
+    {
+      "name": "Agastmuni",
+      "lat": 30.5260,
+      "lon": 79.0260,
+      "landslide_susceptibility": 0.45,
+      "factors": ["moderate_slope", "river_bank_erosion"],
+      "historical_events": 2,
+      "geology": "gneiss_schist",
+      "vegetation_cover": "moderate_forest"
+    },
+    {
+      "name": "Rudraprayag",
+      "lat": 30.2840,
+      "lon": 78.9800,
+      "landslide_susceptibility": 0.52,
+      "factors": ["river_confluence", "steep_valley_walls", "road_cut"],
+      "historical_events": 3,
+      "geology": "gneiss",
+      "vegetation_cover": "moderate_forest"
+    },
+    {
+      "name": "Guptkashi",
+      "lat": 30.5300,
+      "lon": 79.0700,
+      "landslide_susceptibility": 0.60,
+      "factors": ["moderate_slope", "fractured_rock"],
+      "historical_events": 2,
+      "geology": "quartzite",
+      "vegetation_cover": "dense_forest"
+    },
+    {
+      "name": "Phata",
+      "lat": 30.5700,
+      "lon": 79.0600,
+      "landslide_susceptibility": 0.68,
+      "factors": ["steep_slope", "river_gorge", "road_cut"],
+      "historical_events": 3,
+      "geology": "phyllite_quartzite",
+      "vegetation_cover": "moderate_forest"
+    },
+    {
+      "name": "Kalimath",
+      "lat": 30.5500,
+      "lon": 79.0400,
+      "landslide_susceptibility": 0.62,
+      "factors": ["moderate_slope", "seasonal_stream_erosion"],
+      "historical_events": 2,
+      "geology": "quartzite_schist",
+      "vegetation_cover": "dense_forest"
+    }
+  ]
+}
