@@ -57,7 +57,7 @@ Follow these steps to run the complete NeerNetra flash flood prediction system o
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/your-team/neernetra.git
+git clone https://github.com/def-run/neernetra.git
 cd neernetra
 ```
 
