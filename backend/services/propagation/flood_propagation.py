@@ -16,10 +16,11 @@ This is a SIMPLIFIED propagation model, not a full hydrodynamic solver.
 import numpy as np
 from datetime import datetime, timedelta
 from typing import Optional
+from backend.config.locations import PILOT_LOCATIONS as CANONICAL_LOCATIONS
 
 
 # Pilot locations ordered upstream -> downstream
-PILOT_NETWORK = [
+LEGACY_PILOT_NETWORK = [
     {"name": "Kedarnath",   "lat": 30.7346, "lon": 79.0669, "elev": 3583, "order": 0},
     {"name": "Gaurikund",   "lat": 30.6560, "lon": 79.0900, "elev": 1982, "order": 1},
     {"name": "Sonprayag",   "lat": 30.6280, "lon": 79.0700, "elev": 1829, "order": 2},
@@ -30,6 +31,8 @@ PILOT_NETWORK = [
     {"name": "Agastmuni",   "lat": 30.5260, "lon": 79.0260, "elev": 1000, "order": 7},
     {"name": "Rudraprayag", "lat": 30.2840, "lon": 78.9800, "elev":  610, "order": 8},
 ]
+
+PILOT_NETWORK = CANONICAL_LOCATIONS
 
 # Default propagation speed in km/h (flash floods in mountain valleys)
 DEFAULT_SPEED_KMH = 8.0

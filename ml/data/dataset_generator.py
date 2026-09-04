@@ -99,13 +99,8 @@ def generate_dataset(
         loc = rng.choice(LOCATION_PROFILES)
         # Floods are more likely during monsoon (June-September)
         month = rng.choice([6, 7, 7, 8, 8, 8, 9, 9])
-        year = rng.integers(2018, 2027)
-        day = rng.integers(1, 29)
-        hour = rng.integers(0, 24)
-        try:
-            timestamp = pd.Timestamp(year=int(year), month=int(month), day=int(day), hour=int(hour))
-        except ValueError:
-            timestamp = pd.Timestamp(year=int(year), month=int(month), day=15, hour=int(hour))
+        # Sample within the declared range so temporal splits remain valid.
+        timestamp = start + pd.Timedelta(hours=int(rng.integers(0, max(total_hours, 1))))
 
         record = _generate_flood_record(rng, loc, timestamp)
         record["flood_event"] = 1

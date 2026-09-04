@@ -16,6 +16,7 @@ import json
 import os
 from typing import Optional
 from datetime import datetime
+from sqlalchemy import text
 
 from backend.services.arrival_time.arrival_estimator import ArrivalTimeEstimator
 
@@ -101,6 +102,37 @@ class ExposureAnalyzer:
                 a for a in (exposed_bridges + exposed_roads)
                 if a.get("risk_level") in ("HIGH", "CRITICAL")
             ],
+        }
+
+    async def analyze_from_database(
+        self, session, origin_name: str, origin_probability: float,
+        rainfall_intensity: float = 1.0, start_time: Optional[datetime] = None,
+    ) -> dict:
+        """Run the same proximity analysis using PostGIS-seeded assets."""
+        rows = await session.execute(text("""SELECT source_id, asset_type, name,
+            risk_level, priority, ST_AsGeoJSON(geometry) AS geometry
+            FROM infrastructure WHERE geometry IS NOT NULL"""))
+        features = []
+        for row in rows:
+            item = dict(row._mapping)
+            geometry = json.loads(item.pop("geometry"))
+            features.append({"properties": item, "geometry": geometry})
+        bridges = [f for f in features if f["properties"]["asset_type"] == "bridge"]
+        roads = [f for f in features if f["properties"]["asset_type"] == "road"]
+        arrivals = self.arrival_estimator.estimate_for_all_downstream(
+            origin_name=origin_name, origin_probability=origin_probability,
+            rainfall_intensity=rainfall_intensity, start_time=start_time or datetime.utcnow(),
+        )
+        exposed_bridges = [x for x in (self._assess_bridge_exposure(f, arrivals) for f in bridges) if x]
+        exposed_roads = [x for x in (self._assess_road_exposure(f, arrivals) for f in roads) if x]
+        return {
+            "origin": origin_name, "origin_probability": origin_probability,
+            "exposed_bridges": exposed_bridges, "exposed_roads": exposed_roads,
+            "total_bridges_at_risk": len(exposed_bridges),
+            "total_road_segments_at_risk": len(exposed_roads),
+            "critical_assets": [a for a in exposed_bridges + exposed_roads
+                                if a.get("risk_level") in ("HIGH", "CRITICAL")],
+            "data_source": "postgresql/postgis",
         }
 
     def _assess_bridge_exposure(self, bridge: dict, arrivals: list) -> Optional[dict]:

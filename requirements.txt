@@ -10,7 +10,7 @@ python-multipart==0.0.9
 # --- Database ---
 sqlalchemy==2.0.31
 geoalchemy2==0.15.1
-psycopg2-binary==2.9.9
+asyncpg==0.29.0
 alembic==1.13.1
 
 # --- Data Processing ---

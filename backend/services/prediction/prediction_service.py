@@ -21,6 +21,9 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import joblib
+from sqlalchemy import text
+from backend.utils.config import settings
+from backend.database.connection import async_session
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -107,18 +110,25 @@ class PredictionService:
         if self._model is not None:
             return
 
-        model_path = os.path.join("ml", "saved_models", "flood_random_forest.joblib")
-        meta_path = os.path.join("ml", "saved_models", "flood_random_forest_metadata.json")
-        scaler_path = os.path.join("ml", "saved_models", "flood_random_forest_scaler.joblib")
+        model_path = settings.model_path
+        model_name = os.path.splitext(os.path.basename(model_path))[0]
+        meta_path = os.path.join(os.path.dirname(model_path), f"{model_name}_metadata.json")
+        scaler_path = os.path.join(os.path.dirname(model_path), f"{model_name}_scaler.joblib")
 
-        if os.path.exists(model_path):
-            self._model = joblib.load(model_path)
-            if os.path.exists(meta_path):
-                with open(meta_path) as f:
-                    self._model_meta = json.load(f)
-                self._feature_names = self._model_meta.get("feature_names", [])
-            if os.path.exists(scaler_path):
-                self._scaler = joblib.load(scaler_path)
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Configured model does not exist: {model_path}")
+        self._model = joblib.load(model_path)
+        if not os.path.exists(meta_path) or not os.path.exists(scaler_path):
+            raise FileNotFoundError(f"Model metadata/scaler missing for {model_path}")
+        with open(meta_path, encoding="utf-8") as f:
+            self._model_meta = json.load(f)
+        self._feature_names = self._model_meta.get("feature_names", [])
+        self._scaler = joblib.load(scaler_path)
+        expected = len(self._feature_names)
+        if getattr(self._model, "n_features_in_", expected) != expected:
+            raise RuntimeError(f"Model feature mismatch: model={self._model.n_features_in_}, metadata={expected}")
+        if len(self._scaler.get("mean", [])) != expected or len(self._scaler.get("std", [])) != expected:
+            raise RuntimeError("Scaler feature count does not match model metadata")
 
     def _find_nearest_location(self, lat: float, lon: float) -> Optional[str]:
         """Find the nearest pilot location to a coordinate."""
@@ -131,7 +141,7 @@ class PredictionService:
                 nearest = name
         return nearest
 
-    async def predict_risk(self, lat: float, lon: float) -> dict:
+    async def predict_risk(self, lat: float, lon: float, db=None) -> dict:
         """
         Full risk prediction for a single location.
         """
@@ -141,22 +151,22 @@ class PredictionService:
 
         # 1. Fetch live weather
         try:
-            weather_task = self.weather_client.fetch_current_and_forecast(
+            weather = await self.weather_client.fetch_current_and_forecast(
                 lat,
                 lon,
-                forecast_hours=12
+                forecast_hours=12,
+                past_days=3,
             )
-
-            rainfall_task = self.weather_client.fetch_recent_rainfall(
-                lat,
-                lon,
-                days_back=3
-            )
-
-            weather, recent = await asyncio.gather(
-                weather_task,
-                rainfall_task
-            )
+            now = datetime.now(timezone.utc)
+            hourly = weather.get("hourly", [])
+            recent = {"rainfall_hourly": [
+                record for record in hourly
+                if record.get("time") and self._record_time(record) <= now
+            ]}
+            weather["hourly"] = [
+                record for record in hourly
+                if record.get("time") and self._record_time(record) >= now
+            ]
 
             weather_ok = True
 
@@ -199,7 +209,9 @@ class PredictionService:
 
         # 4. Run ML inference
         probability = 0.0
+        unavailable_features = []
         if self._model is not None and self._feature_names:
+            unavailable_features = [name for name in self._feature_names if name not in features]
             x = self._build_feature_vector(features)
             probability = float(self._model.predict_proba(x)[0, 1])
 
@@ -230,7 +242,7 @@ class PredictionService:
         # 7. Determine top drivers
         drivers = self._get_top_drivers(rainfall, cascade, static)
 
-        return {
+        result = {
             "location": {
                 "lat": lat, "lon": lon,
                 "nearest_station": location_name.title() if location_name else None,
@@ -242,6 +254,9 @@ class PredictionService:
             "forecast": forecast,
             "cascade": cascade,
             "drivers": drivers,
+            "model_type": settings.model_type,
+            "feature_count": len(self._feature_names or []),
+            "unavailable_features": unavailable_features,
             "current_weather": {
                 "temperature_c": current.get("temperature_2m"),
                 "humidity_pct": current.get("relative_humidity_2m"),
@@ -249,13 +264,47 @@ class PredictionService:
             },
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
+        if db is not None and location_name:
+            row = await db.execute(text("SELECT id FROM locations WHERE name = :name"), {"name": location_name.title()})
+            location_id = row.scalar_one_or_none()
+            if location_id is None:
+                raise RuntimeError(f"Location is not bootstrapped: {location_name}")
+            timestamp = datetime.now(timezone.utc).replace(tzinfo=None)
+            await db.execute(
+                text("""INSERT INTO predictions
+                (location_id, timestamp, probability, risk_level, data_confidence, model_type, drivers)
+                VALUES (:location_id, :timestamp, :probability, :risk_level, :confidence, :model_type,
+                        CAST(:drivers AS jsonb))
+                ON CONFLICT (location_id, timestamp, model_type) DO UPDATE SET
+                probability=EXCLUDED.probability, risk_level=EXCLUDED.risk_level,
+                data_confidence=EXCLUDED.data_confidence, drivers=EXCLUDED.drivers"""),
+                {"location_id": location_id, "timestamp": timestamp, "probability": probability,
+                 "risk_level": risk_level, "confidence": conf.get("confidence_level", str(conf)) if isinstance(conf, dict) else str(conf),
+                 "model_type": settings.model_type, "drivers": json.dumps(drivers)},
+            )
+        return result
 
-    async def predict_all_locations(self) -> list:
+    async def predict_all_locations(self, db=None) -> list:
+        if db is not None:
+            async def predict_with_session(name, loc):
+                try:
+                    async with async_session() as session:
+                        result = await self.predict_risk(loc["lat"], loc["lon"], db=session)
+                        await session.commit()
+                    result["location"]["name"] = name.title()
+                    return result
+                except Exception as e:
+                    return {"location": {"name": name.title(), "lat": loc["lat"], "lon": loc["lon"]}, "error": str(e)}
+
+            return await asyncio.gather(*[
+                predict_with_session(name, loc) for name, loc in LOCATION_LOOKUP.items()
+            ])
+
         async def predict_one(name, loc):
             try:
                 result = await self.predict_risk(
                     loc["lat"],
-                    loc["lon"]
+                    loc["lon"], db=db
                 )
 
                 result["location"]["name"] = name.title()
@@ -295,6 +344,11 @@ class PredictionService:
             x = (x - mean) / std
 
         return x
+
+    @staticmethod
+    def _record_time(record: dict) -> datetime:
+        value = datetime.fromisoformat(record["time"].replace("Z", "+00:00"))
+        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
 
     @staticmethod
     def _classify_risk(p: float) -> str:

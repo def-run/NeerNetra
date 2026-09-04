@@ -18,6 +18,9 @@ import time
 import traceback
 from datetime import datetime
 
+# This file is an executable smoke-test script, not a pytest fixture module.
+__test__ = False
+
 # Add project root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
