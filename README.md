@@ -74,6 +74,9 @@ python -m venv venv
 # Install dependencies (from root directory)
 pip install -r requirements.txt
 
+# Initialize PostgreSQL/PostGIS once before starting the backend
+python -m backend.database.bootstrap
+
 # Start the FastAPI server (it will run on http://localhost:8000)
 # Make sure you are in the NeerNetra root directory when running this:
 python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
@@ -123,9 +126,9 @@ NeerNetra/
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/risk` | Current flood risk for a location |
-| GET | `/api/rainfall/history` | Historical rainfall data |
+| GET | `/api/rainfall/current` | Persisted/current rolling rainfall features |
 | GET | `/api/weather/forecast` | Weather forecast |
-| GET | `/api/risk-map` | Spatial risk grid |
+| GET | `/api/risk-map` | Location-level risk collection (not a raster grid) |
 | GET | `/api/flood-events` | Historical flood events |
 | GET | `/api/propagation` | Flood propagation results |
 | GET | `/api/infrastructure/risk` | Road/bridge risk |
@@ -136,6 +139,8 @@ NeerNetra/
 ## Disclaimer
 
 > This is a **decision-support and early-warning prototype**, not an authoritative replacement for government flood warnings. All predictions, propagation estimates, arrival times, LSET values, and confidence indicators are estimates and must be treated accordingly.
+>
+> The prototype uses a Random Forest model at `ml/saved_models/flood_random_forest.joblib`, trained on synthetic development data. Its benchmark metrics are not real-world validation accuracy. Propagation is a simplified network-based estimate, and the bundled DEM is synthetic.
 
 ---
 

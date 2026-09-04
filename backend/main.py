@@ -9,6 +9,7 @@ Center: 30.735 N, 79.066 E
 
 import os
 import sys
+import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
@@ -20,6 +21,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from backend.api.routes import router as api_router
 from backend.api.demo_routes import demo_router
+from backend.database.connection import async_session, check_database
+from backend.utils.config import settings
 
 
 # ---------------------------------------------------------------------------
@@ -36,14 +39,26 @@ async def lifespan(app: FastAPI):
 
         pipeline = IngestionPipeline()
 
+        async def ingestion_cycle():
+            logging.getLogger("neernetra").info("weather ingestion cycle started")
+            async with async_session() as session:
+                summary = await pipeline.run_weather_ingestion(session=session)
+                await session.commit()
+            logging.getLogger("neernetra").info(
+                "weather ingestion cycle completed: %s", summary
+            )
+
+        if await check_database():
+            await ingestion_cycle()
+
         scheduler = AsyncIOScheduler()
         scheduler.add_job(
-            pipeline.run_weather_ingestion,
+            ingestion_cycle,
             "interval",
-            minutes=30,
+            minutes=settings.data_refresh_interval_minutes,
             id="weather_ingestion",
             name="Weather Data Ingestion",
-            next_run_time=None,  # Don't run immediately on startup
+            next_run_time=None,
         )
         scheduler.start()
         print("[NeerNetra] APScheduler started (weather ingestion every 30 min)")
@@ -77,12 +92,7 @@ app = FastAPI(
 # --- CORS (allow React dev server) ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "*",  # For hackathon demo flexibility
-    ],
+    allow_origins=[origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -97,8 +107,13 @@ app.include_router(demo_router, prefix="/api")
 @app.get("/health", tags=["System"])
 async def health_check():
     """Service health check."""
+    try:
+        database = "ok" if await check_database() else "error"
+    except Exception:
+        database = "unavailable"
     return {
-        "status": "healthy",
+        "status": "healthy" if database == "ok" else "degraded",
+        "database": database,
         "service": "NeerNetra",
         "version": "0.2.0",
         "phase": "5 - Full Backend",

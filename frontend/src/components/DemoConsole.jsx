@@ -24,8 +24,10 @@ function DemoConsole() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    demoAPI.getScenario().then((res) => setScenario(res.data)).catch(() => {});
-    demoAPI.getState().then((res) => setState(res.data)).catch(() => {});
+    demoAPI.getScenario().then((res) => setScenario(res.data))
+      .catch((error) => console.error('Demo scenario unavailable:', error));
+    demoAPI.getState().then((res) => setState(res.data))
+      .catch((error) => console.error('Demo state unavailable:', error));
   }, []);
 
   const run = useCallback((fn) => {

@@ -29,7 +29,7 @@ The agent **MUST** follow these rules:
 ### What was built in Phase 2:
 - `weather_client.py` — Async Open-Meteo API client (current, forecast, historical, multi-location).
 - `rainfall_processor.py` — Computes 6 rolling accumulation windows (1h–72h), intensity, and acceleration.
-- `synthetic_dem.py` — Generates realistic DEM for pilot region (48,900 cells, 753m–3868m).
+- `synthetic_dem.py` — Generates a synthetic DEM for development/demo terrain features; it is not measured terrain data.
 - `dem_processor.py` — Loads/queries GeoTIFF DEMs via Rasterio.
 - `feature_extractor.py` — Extracts slope (Horn's method), aspect, TRI, drainage, distance-to-waterbody.
 - `road_bridge_loader.py` — GeoPandas loader for road/bridge GeoJSON with spatial queries.
@@ -65,7 +65,7 @@ The agent **MUST** follow these rules:
 - `routes.py` -- 14 live API endpoints replacing all Phase 1 stubs (risk, risk-map, rainfall, forecast, propagation, arrival-time, cascade, infrastructure, LSET, locations).
 - `main.py` -- APScheduler integration (30min weather ingestion), CORS, version 0.2.0.
 - **Verified:** All 7 tested endpoints returned 200 OK with live Open-Meteo data.
-- **Live results:** Kedarnath risk=LOW (4.7mm rain), propagation 9 steps, 7 bridges + 4 roads at risk.
+- **Runtime note:** Risk is generated from Open-Meteo plus the configured Random Forest model; propagation is a simplified network estimate and persistence requires the bootstrapped PostgreSQL/PostGIS database.
 
 ### What was built in Phase 6:
 - `FloodMap.jsx` -- Dark CARTO tiles, risk-colored CircleMarkers, river path, propagation lines, tooltips/popups.
@@ -84,7 +84,7 @@ The agent **MUST** follow these rules:
 * **[COMPLETED] Phase 2:** Data Pipeline & Geospatial Preparation (Ingest rainfall, process DEM, spatial features)
 * **[COMPLETED] Phase 3:** ML Prediction (Feature engineering, train Random Forest, evaluation)
 * **[COMPLETED] Phase 4:** Flood Dynamics & Risk Modules (Propagation, arrival-time, cascade, infrastructure exposure, LSET)
-* **[COMPLETED] Phase 5:** Backend (FastAPI full implementation, PostGIS integration, APScheduler)
+* **[COMPLETED] Phase 5:** Backend (FastAPI services, PostgreSQL/PostGIS persistence, APScheduler)
 * **[COMPLETED] Phase 6:** Frontend (React map layers, risk panels, time slider)
 * **[PENDING] Phase 7:** Integration & Testing (End-to-end pipeline)
 * **[PENDING] Phase 8:** Demo Preparation (Simulation mode, demo sequence)

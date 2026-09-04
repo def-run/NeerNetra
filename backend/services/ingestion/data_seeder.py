@@ -73,17 +73,32 @@ class DataSeeder:
         for event in events:
             await self.session.execute(
                 text("""
-                    INSERT INTO flood_events (event_date, location_name, severity, description, source, geometry)
-                    VALUES (:event_date, :location_name, :severity, :description, :source,
+                    INSERT INTO flood_events (source_id, event_date, end_date, location_name, severity,
+                            flood_type, estimated_rainfall_24h_mm, estimated_rainfall_72h_mm,
+                            deaths, description, source, affected_locations, geometry)
+                    VALUES (:source_id, CAST(:event_date AS timestamp), CAST(:end_date AS timestamp),
+                            :location_name, :severity,
+                            :flood_type, :rain24, :rain72, :deaths, :description, :source,
+                            CAST(:affected_locations AS jsonb),
                             ST_SetSRID(ST_MakePoint(:lon, :lat), 4326))
-                    ON CONFLICT DO NOTHING
+                    ON CONFLICT (source_id) DO UPDATE SET
+                        end_date=EXCLUDED.end_date, severity=EXCLUDED.severity,
+                        description=EXCLUDED.description, source=EXCLUDED.source,
+                        affected_locations=EXCLUDED.affected_locations
                 """),
                 {
-                    "event_date": event["event_date"],
+                    "source_id": event["id"],
+                    "event_date": datetime.fromisoformat(event["event_date"]),
+                    "end_date": datetime.fromisoformat(event["end_date"]) if event.get("end_date") else None,
                     "location_name": event["location_name"],
                     "severity": event["severity"],
                     "description": event.get("description", ""),
                     "source": event.get("source", ""),
+                    "flood_type": event.get("flood_type"),
+                    "rain24": event.get("estimated_rainfall_24h_mm"),
+                    "rain72": event.get("estimated_rainfall_72h_mm"),
+                    "deaths": event.get("deaths"),
+                    "affected_locations": json.dumps(event.get("affected_locations", [])),
                     "lat": event["lat"],
                     "lon": event["lon"],
                 },
@@ -157,13 +172,15 @@ class DataSeeder:
 
             await self.session.execute(
                 text("""
-                    INSERT INTO infrastructure (asset_type, name, risk_level, priority, geometry)
-                    VALUES ('road', :name, :risk_level, :priority,
+                    INSERT INTO infrastructure (source_id, asset_type, name, risk_level, priority, geometry)
+                    VALUES (:source_id, 'road', :name, :risk_level, :priority,
                             ST_SetSRID(ST_GeomFromGeoJSON(:geom), 4326))
-                    ON CONFLICT DO NOTHING
+                    ON CONFLICT (source_id) DO UPDATE SET geometry=EXCLUDED.geometry,
+                        risk_level=EXCLUDED.risk_level, priority=EXCLUDED.priority
                 """),
                 {
                     "name": props.get("name", "Unknown Road"),
+                    "source_id": f"road:{props.get('id', props.get('name', 'unknown'))}",
                     "risk_level": props.get("flood_vulnerability", "unknown"),
                     "priority": props.get("importance", "unknown"),
                     "geom": geom,
@@ -200,13 +217,15 @@ class DataSeeder:
 
             await self.session.execute(
                 text("""
-                    INSERT INTO infrastructure (asset_type, name, risk_level, priority, geometry)
-                    VALUES ('bridge', :name, :risk_level, :priority,
+                    INSERT INTO infrastructure (source_id, asset_type, name, risk_level, priority, geometry)
+                    VALUES (:source_id, 'bridge', :name, :risk_level, :priority,
                             ST_SetSRID(ST_GeomFromGeoJSON(:geom), 4326))
-                    ON CONFLICT DO NOTHING
+                    ON CONFLICT (source_id) DO UPDATE SET geometry=EXCLUDED.geometry,
+                        risk_level=EXCLUDED.risk_level, priority=EXCLUDED.priority
                 """),
                 {
                     "name": props.get("name", "Unknown Bridge"),
+                    "source_id": f"bridge:{props.get('id', props.get('name', 'unknown'))}",
                     "risk_level": props.get("flood_vulnerability", "unknown"),
                     "priority": props.get("importance", "unknown"),
                     "geom": geom,

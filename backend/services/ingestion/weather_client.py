@@ -11,14 +11,16 @@ This is the primary weather data source for the hackathon MVP (Section 4.2).
 """
 
 import httpx
-from datetime import datetime, timedelta
+import asyncio
+from datetime import datetime, timedelta, timezone
 from typing import Optional
+from backend.utils.config import settings
 
 
 # ---------------------------------------------------------------------------
 # Open-Meteo API Configuration
 # ---------------------------------------------------------------------------
-BASE_URL = "https://api.open-meteo.com/v1"
+BASE_URL = settings.open_meteo_base_url.rstrip("/")
 FORECAST_URL = f"{BASE_URL}/forecast"
 HISTORICAL_URL = "https://archive-api.open-meteo.com/v1/archive"
 
@@ -48,14 +50,16 @@ class WeatherClient:
     for any lat/lon coordinate.
     """
 
-    def __init__(self, timeout: float = 15.0):
+    def __init__(self, timeout: float = 15.0, retries: int = 2):
         self.timeout = timeout
+        self.retries = retries
 
     async def fetch_current_and_forecast(
         self,
         lat: float,
         lon: float,
         forecast_hours: int = 48,
+        past_days: int = 0,
     ) -> dict:
         """
         Fetch current conditions + hourly forecast.
@@ -74,13 +78,14 @@ class WeatherClient:
             "hourly": ",".join(FORECAST_VARIABLES),
             "current": "temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m,wind_direction_10m",
             "timezone": "UTC",
-            "forecast_hours": forecast_hours,
         }
+        if past_days:
+            params["past_days"] = past_days
+            params["forecast_days"] = 1
+        else:
+            params["forecast_hours"] = forecast_hours
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.get(FORECAST_URL, params=params)
-            response.raise_for_status()
-            data = response.json()
+        data = await self._get_json(FORECAST_URL, params)
 
         return {
             "location": {"lat": lat, "lon": lon},
@@ -119,10 +124,7 @@ class WeatherClient:
             "timezone": "UTC",
         }
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.get(HISTORICAL_URL, params=params)
-            response.raise_for_status()
-            data = response.json()
+        data = await self._get_json(HISTORICAL_URL, params)
 
         return {
             "location": {"lat": lat, "lon": lon},
@@ -157,10 +159,7 @@ class WeatherClient:
             "timezone": "UTC",
         }
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.get(FORECAST_URL, params=params)
-            response.raise_for_status()
-            data = response.json()
+        data = await self._get_json(FORECAST_URL, params)
 
         hourly = self._parse_hourly(data.get("hourly", {}))
 
@@ -208,6 +207,22 @@ class WeatherClient:
     # -----------------------------------------------------------------------
     # Helpers
     # -----------------------------------------------------------------------
+    async def _get_json(self, url: str, params: dict) -> dict:
+        """Fetch JSON with bounded connect/read timeouts and retry backoff."""
+        timeout = httpx.Timeout(self.timeout, connect=5.0)
+        last_error = None
+        for attempt in range(self.retries + 1):
+            try:
+                async with httpx.AsyncClient(timeout=timeout) as client:
+                    response = await client.get(url, params=params)
+                    response.raise_for_status()
+                    return response.json()
+            except (httpx.TimeoutException, httpx.NetworkError, httpx.HTTPStatusError) as exc:
+                last_error = exc
+                if attempt < self.retries:
+                    await asyncio.sleep(0.4 * (attempt + 1))
+        raise RuntimeError(f"Open-Meteo request failed after {self.retries + 1} attempts: {last_error}") from last_error
+
     @staticmethod
     def _parse_hourly(hourly_data: dict) -> list[dict]:
         """

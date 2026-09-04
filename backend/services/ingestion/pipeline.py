@@ -17,6 +17,9 @@ import os
 import json
 from datetime import datetime, timezone
 from typing import Optional
+from sqlalchemy import text
+from backend.database.connection import async_session
+from backend.config.locations import PILOT_LOCATIONS as CANONICAL_LOCATIONS
 
 from backend.services.ingestion.weather_client import WeatherClient
 from backend.services.ingestion.rainfall_processor import RainfallProcessor
@@ -52,6 +55,7 @@ class IngestionPipeline:
     async def run_weather_ingestion(
         self,
         locations: Optional[list[dict]] = None,
+        session=None,
     ) -> dict:
         """
         Fetch weather data and compute rainfall features for all locations.
@@ -59,8 +63,13 @@ class IngestionPipeline:
         Returns:
             dict with weather data and rainfall features per location
         """
-        locations = locations or PILOT_LOCATIONS
+        locations = locations or CANONICAL_LOCATIONS
         results = {}
+        own_session = session is None
+        if own_session:
+            session = async_session()
+        weather_rows_written = 0
+        rainfall_rows_written = 0
 
         for loc in locations:
             name = loc["name"]
@@ -91,6 +100,55 @@ class IngestionPipeline:
                     forecast_records=weather.get("hourly", []),
                 )
 
+                location_result = await session.execute(
+                    text("SELECT id FROM locations WHERE name = :name"), {"name": name}
+                )
+                location_id = location_result.scalar_one_or_none()
+                if location_id is None:
+                    raise RuntimeError(f"Location is not bootstrapped: {name}")
+                for record in recent.get("rainfall_hourly", []):
+                    if not record.get("time"):
+                        continue
+                    await session.execute(
+                        text("""INSERT INTO weather_observations
+                        (location_id, timestamp, rainfall, temperature, humidity,
+                         wind_speed, wind_direction, weather_code, source)
+                        VALUES (:location_id, CAST(:timestamp AS timestamp), :rainfall,
+                         :temperature, :humidity, :wind_speed, :wind_direction, :weather_code,
+                         'open-meteo')
+                        ON CONFLICT (location_id, timestamp, source) DO UPDATE SET
+                         rainfall=EXCLUDED.rainfall, temperature=EXCLUDED.temperature,
+                         humidity=EXCLUDED.humidity, wind_speed=EXCLUDED.wind_speed,
+                         wind_direction=EXCLUDED.wind_direction, weather_code=EXCLUDED.weather_code"""),
+                        {"location_id": location_id, "timestamp": record["time"].replace("T", " ").replace("Z", ""),
+                         "rainfall": record.get("precipitation", record.get("rain")),
+                         "temperature": record.get("temperature_2m"), "humidity": record.get("relative_humidity_2m"),
+                         "wind_speed": record.get("wind_speed_10m"), "wind_direction": record.get("wind_direction_10m"),
+                         "weather_code": record.get("weather_code")},
+                    )
+                    weather_rows_written += 1
+                feature_time = rainfall_features.get("timestamp")
+                if feature_time:
+                    await session.execute(
+                        text("""INSERT INTO rainfall_features
+                        (location_id, timestamp, rain_1h, rain_3h, rain_6h, rain_12h, rain_24h,
+                         rain_72h, rainfall_intensity, rainfall_acceleration)
+                        VALUES (:location_id, CAST(:timestamp AS timestamp), :rain_1h, :rain_3h,
+                         :rain_6h, :rain_12h, :rain_24h, :rain_72h, :intensity, :acceleration)
+                        ON CONFLICT (location_id, timestamp) DO UPDATE SET
+                         rain_1h=EXCLUDED.rain_1h, rain_3h=EXCLUDED.rain_3h, rain_6h=EXCLUDED.rain_6h,
+                         rain_12h=EXCLUDED.rain_12h, rain_24h=EXCLUDED.rain_24h, rain_72h=EXCLUDED.rain_72h,
+                         rainfall_intensity=EXCLUDED.rainfall_intensity,
+                         rainfall_acceleration=EXCLUDED.rainfall_acceleration"""),
+                        {"location_id": location_id, "timestamp": feature_time.replace("T", " ").replace("Z", ""),
+                         "rain_1h": rainfall_features.get("rain_1h"), "rain_3h": rainfall_features.get("rain_3h"),
+                         "rain_6h": rainfall_features.get("rain_6h"), "rain_12h": rainfall_features.get("rain_12h"),
+                         "rain_24h": rainfall_features.get("rain_24h"), "rain_72h": rainfall_features.get("rain_72h"),
+                         "intensity": rainfall_features.get("rainfall_intensity"),
+                         "acceleration": rainfall_features.get("rainfall_acceleration")},
+                    )
+                    rainfall_rows_written += 1
+
                 results[name] = {
                     "weather": weather,
                     "rainfall_features": rainfall_features,
@@ -105,7 +163,11 @@ class IngestionPipeline:
                 }
                 print(f"  ⚠ Error for {name}: {e}")
 
-        return results
+        if own_session:
+            await session.commit()
+            await session.close()
+        return {"locations": results, "weather_rows_written": weather_rows_written,
+                "rainfall_feature_rows_written": rainfall_rows_written}
 
     async def run_full_ingestion(self) -> dict:
         """
@@ -125,7 +187,8 @@ class IngestionPipeline:
         print("=" * 60)
 
         print("\n[1/3] Fetching weather & rainfall data...")
-        weather_results = await self.run_weather_ingestion()
+        ingestion = await self.run_weather_ingestion()
+        weather_results = ingestion["locations"]
 
         print("\n[2/3] Loading terrain features...")
         terrain_results = self._load_terrain_features()
@@ -144,6 +207,8 @@ class IngestionPipeline:
             ),
             "terrain_available": terrain_results is not None,
             "ancillary_loaded": ancillary is not None,
+            "weather_rows_written": ingestion["weather_rows_written"],
+            "rainfall_feature_rows_written": ingestion["rainfall_feature_rows_written"],
         }
 
         print(f"\n{'=' * 60}")

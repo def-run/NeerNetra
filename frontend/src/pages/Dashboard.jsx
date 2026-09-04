@@ -83,7 +83,7 @@ function Dashboard() {
     if (next && historicalEvents.length === 0) {
       floodEventsAPI.getEvents()
         .then((res) => setHistoricalEvents(res.data.events || []))
-        .catch(() => {});
+        .catch((error) => console.error('Flood events unavailable:', error));
     }
   };
 

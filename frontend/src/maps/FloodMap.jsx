@@ -67,7 +67,7 @@ function FloodMap({
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/dark_nolabels/{z}/{x}/{y}{r}.png?key=cb1_2qer_1_ae4b94f6df897e006d13c802"
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_2qer_1_ae4b94f6df897e006d13c802"
       />
 
       {onMapClick && <ClickCatcher onMapClick={onMapClick} />}
@@ -170,7 +170,13 @@ function FloodMap({
               click: () => onLocationSelect && onLocationSelect(loc),
             }}
           >
-            <Tooltip direction="top" offset={[0, -8]} opacity={0.95} permanent={isSelected}>
+            <Tooltip
+              direction="top"
+              offset={[0, -8]}
+              opacity={0.95}
+              permanent
+              className="place-label"
+            >
               <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '12px' }}>
                 <strong>{name}</strong>
                 <br />
