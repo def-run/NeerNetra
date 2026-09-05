@@ -1470,7 +1470,6 @@
 .leaflet-tooltip.place-label::before {
   border-top-color: #94a3b8;
 }
-<<<<<<< HEAD
 
 /* ---------------------------------------------------------------- */
 /* Low-risk info box (LSET, Infra, Arrival when probability is low) */
@@ -1636,6 +1635,3 @@
   font-size: 10.5px;
   color: var(--text-muted);
 }
-
-=======
->>>>>>> 2847940c9ccf213acf1743c05f2f4ea33dde7ee7

@@ -19,7 +19,7 @@ import LSETPanel from '../components/LSETPanel';
 import InfraPanel from '../components/InfraPanel';
 import ArrivalTable from '../components/ArrivalTable';
 import Tabs from '../components/Tabs';
-import { riskAPI, dynamicsAPI, systemAPI, floodEventsAPI } from '../services/api';
+import { riskAPI, dynamicsAPI, floodEventsAPI } from '../services/api';
 import { formatClock } from '../utils/constants';
 
 const TABS = [
