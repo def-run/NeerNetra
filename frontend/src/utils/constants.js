@@ -58,6 +58,37 @@ export function urgencyColor(urgency) {
   return URGENCY_COLORS[urgency] || '#62766d';
 }
 
+export const INTENSITY_LEVELS = ['LOW', 'MODERATE', 'SEVERE', 'EXTREME'];
+
+export const INTENSITY_COLORS = {
+  LOW: '#5fbf77',
+  MODERATE: '#e0a83e',
+  SEVERE: '#e2622d',
+  EXTREME: '#c4262e',
+};
+
+export const WITHSTAND_STATUSES = {
+  LIKELY_SAFE: 'Likely safe',
+  AT_RISK: 'At risk',
+  LIKELY_DAMAGED: 'Likely damaged',
+  LIKELY_DESTROYED: 'Likely destroyed',
+};
+
+export const WITHSTAND_COLORS = {
+  LIKELY_SAFE: '#5fbf77',
+  AT_RISK: '#e0a83e',
+  LIKELY_DAMAGED: '#e2622d',
+  LIKELY_DESTROYED: '#c4262e',
+};
+
+export function intensityColor(level) {
+  return INTENSITY_COLORS[level] || INTENSITY_COLORS.LOW;
+}
+
+export function withstandColor(status) {
+  return WITHSTAND_COLORS[status] || '#62766d';
+}
+
 export function formatMinutes(min) {
   if (min == null) return '--';
   if (min <= 0) return 'now';

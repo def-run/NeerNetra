@@ -35,6 +35,7 @@ from backend.services.cascade.cascade_analyzer import CascadeAnalyzer
 from backend.services.infrastructure.exposure_analyzer import ExposureAnalyzer
 from backend.services.lset.lset_calculator import LSETCalculator
 from backend.services.prediction.confidence import ConfidenceEstimator
+from backend.services.prediction.flood_intensity import FloodIntensityEstimator
 
 
 # Pilot location lookup
@@ -99,6 +100,7 @@ class PredictionService:
         self.exposure_analyzer = ExposureAnalyzer()
         self.lset_calculator = LSETCalculator()
         self.confidence_estimator = ConfidenceEstimator()
+        self.intensity_estimator = FloodIntensityEstimator()
 
         self._model = None
         self._model_meta = None
@@ -239,7 +241,16 @@ class PredictionService:
             forecast_available=weather_ok,
         )
 
-        # 7. Determine top drivers
+        # 7. Flood intensity
+        intensity = self.intensity_estimator.estimate_intensity(
+            flood_probability=probability,
+            rainfall=rainfall,
+            forecast=forecast,
+            static_features=static,
+            cascade=cascade,
+        )
+
+        # 8. Determine top drivers
         drivers = self._get_top_drivers(rainfall, cascade, static)
 
         result = {
@@ -253,6 +264,7 @@ class PredictionService:
             "rainfall": rainfall,
             "forecast": forecast,
             "cascade": cascade,
+            "flood_intensity": intensity,
             "drivers": drivers,
             "model_type": settings.model_type,
             "feature_count": len(self._feature_names or []),

@@ -2,8 +2,12 @@
  * NeerNetra -- Dashboard (Live Map)
  * ===================================
  * The main operational view: live risk map for the 9 pilot locations,
- * click-anywhere risk querying, a flood-scenario control bar, an
- * animated propagation timeline, and a tabbed intel panel.
+ * click-anywhere risk querying, and a tabbed intel panel.
+ *
+ * LSET, Infrastructure, and Downstream tabs now use the **real-time
+ * ML-predicted probability** from the selected location rather than
+ * a hardcoded scenario value. Scenario simulation controls have been
+ * moved to the Demo page.
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -14,7 +18,6 @@ import ForecastPanel from '../components/ForecastPanel';
 import LSETPanel from '../components/LSETPanel';
 import InfraPanel from '../components/InfraPanel';
 import ArrivalTable from '../components/ArrivalTable';
-import PropagationSlider from '../components/PropagationSlider';
 import Tabs from '../components/Tabs';
 import { riskAPI, dynamicsAPI, systemAPI, floodEventsAPI } from '../services/api';
 import { formatClock } from '../utils/constants';
@@ -35,10 +38,6 @@ function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [selectedName, setSelectedName] = useState(null);
 
-  const [allLocations, setAllLocations] = useState([]);
-  const [origin, setOrigin] = useState('Kedarnath');
-  const [probability, setProbability] = useState(0.8);
-  const [rainfallIntensity, setRainfallIntensity] = useState(1.5);
   const [propagation, setPropagation] = useState(null);
 
   const [activeTab, setActiveTab] = useState('risk');
@@ -63,19 +62,6 @@ function Dashboard() {
     const interval = setInterval(loadRiskMap, REFRESH_MS);
     return () => clearInterval(interval);
   }, [loadRiskMap]);
-
-  useEffect(() => {
-    systemAPI.getLocations()
-      .then((res) => setAllLocations(res.data.locations || []))
-      .catch(() => setAllLocations([]));
-  }, []);
-
-  useEffect(() => {
-    if (!origin) return;
-    dynamicsAPI.getPropagation(origin, probability, rainfallIntensity)
-      .then((res) => setPropagation(res.data))
-      .catch(() => setPropagation(null));
-  }, [origin, probability, rainfallIntensity]);
 
   const toggleHistory = () => {
     const next = !showHistory;
@@ -102,6 +88,22 @@ function Dashboard() {
     }
     return riskLocations[0];
   }, [riskLocations, selectedName]);
+
+  // Derive real-time values from the selected location's prediction
+  const liveOrigin = selectedRisk?.location?.name || 'Kedarnath';
+  const liveProbability = selectedRisk?.risk_probability ?? 0;
+  const liveRainfallIntensity = selectedRisk?.rainfall?.rainfall_intensity ?? 0;
+
+  // Only fetch propagation when real-time probability is significant
+  useEffect(() => {
+    if (!liveOrigin || liveProbability < 0.25) {
+      setPropagation(null);
+      return;
+    }
+    dynamicsAPI.getPropagation(liveOrigin, liveProbability, Math.max(liveRainfallIntensity, 0.5))
+      .then((res) => setPropagation(res.data))
+      .catch(() => setPropagation(null));
+  }, [liveOrigin, liveProbability, liveRainfallIntensity]);
 
   return (
     <div className="dashboard">
@@ -130,30 +132,6 @@ function Dashboard() {
           />
         </div>
         <p className="map-hint">Click anywhere on the map to run a live risk assessment for that exact point.</p>
-
-        <div className="panel-card scenario-bar">
-          <h3>Flood scenario</h3>
-          <div className="scenario-controls">
-            <label className="field-label">
-              Origin
-              <select className="select-input" value={origin} onChange={(e) => setOrigin(e.target.value)}>
-                {(allLocations.length ? allLocations : [{ name: origin }]).map((l) => (
-                  <option key={l.name} value={l.name}>{l.name}</option>
-                ))}
-              </select>
-            </label>
-            <label className="field-label">
-              Probability: <span className="field-value">{Math.round(probability * 100)}%</span>
-              <input type="range" min={0.1} max={1} step={0.05} value={probability} onChange={(e) => setProbability(Number(e.target.value))} className="range-input" />
-            </label>
-            <label className="field-label">
-              Rain intensity: <span className="field-value">{rainfallIntensity.toFixed(1)}x</span>
-              <input type="range" min={0.5} max={3} step={0.1} value={rainfallIntensity} onChange={(e) => setRainfallIntensity(Number(e.target.value))} className="range-input" />
-            </label>
-          </div>
-        </div>
-
-        <PropagationSlider propagation={propagation} />
       </div>
 
       <div className="dashboard-panel-col">
@@ -170,9 +148,27 @@ function Dashboard() {
               />
             </>
           )}
-          {activeTab === 'evac' && <LSETPanel origin={origin} probability={probability} rainfallIntensity={rainfallIntensity} />}
-          {activeTab === 'infra' && <InfraPanel origin={origin} probability={probability} rainfallIntensity={rainfallIntensity} />}
-          {activeTab === 'downstream' && <ArrivalTable origin={origin} probability={probability} rainfallIntensity={rainfallIntensity} />}
+          {activeTab === 'evac' && (
+            <LSETPanel
+              origin={liveOrigin}
+              probability={liveProbability}
+              rainfallIntensity={liveRainfallIntensity}
+            />
+          )}
+          {activeTab === 'infra' && (
+            <InfraPanel
+              origin={liveOrigin}
+              probability={liveProbability}
+              rainfallIntensity={liveRainfallIntensity}
+            />
+          )}
+          {activeTab === 'downstream' && (
+            <ArrivalTable
+              origin={liveOrigin}
+              probability={liveProbability}
+              rainfallIntensity={liveRainfallIntensity}
+            />
+          )}
         </div>
       </div>
     </div>

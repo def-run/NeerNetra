@@ -1,8 +1,10 @@
 /**
  * NeerNetra -- ArrivalTable
  * ===========================
- * Table view of estimated arrival time at every downstream location
- * for the current scenario. Complements the animated PropagationSlider.
+ * Table view of estimated arrival time at every downstream location.
+ *
+ * Uses real-time probability from the ML prediction. Shows a
+ * "no significant impact" state when risk is low.
  */
 
 import { useState, useEffect } from 'react';
@@ -13,14 +15,37 @@ function ArrivalTable({ origin, probability, rainfallIntensity }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const isLowRisk = probability < 0.25;
+
   useEffect(() => {
-    if (!origin) return;
+    if (!origin || isLowRisk) {
+      setRows([]);
+      return;
+    }
     setLoading(true);
-    dynamicsAPI.getAllArrivals(origin, probability || 0.8, rainfallIntensity || 1.0)
+    dynamicsAPI.getAllArrivals(origin, probability, rainfallIntensity || 0.5)
       .then((res) => setRows(res.data.downstream_arrivals || []))
       .catch(() => setRows([]))
       .finally(() => setLoading(false));
-  }, [origin, probability, rainfallIntensity]);
+  }, [origin, probability, rainfallIntensity, isLowRisk]);
+
+  if (isLowRisk) {
+    return (
+      <div className="panel-card">
+        <h3>Downstream arrival times</h3>
+        <div className="low-risk-info">
+          <span className="low-risk-icon">✓</span>
+          <div>
+            <p className="low-risk-title">No significant downstream impact</p>
+            <p className="low-risk-desc">
+              Current flood probability is {formatPct(probability)} — risk level is LOW.
+              Downstream arrival estimates are computed when flood probability exceeds 25%.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="panel-card">

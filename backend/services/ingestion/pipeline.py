@@ -25,6 +25,14 @@ from backend.services.ingestion.weather_client import WeatherClient
 from backend.services.ingestion.rainfall_processor import RainfallProcessor
 
 
+def _parse_naive_dt(iso_str: str) -> datetime:
+    """Parse an ISO-8601 string into a naive (no-tz) datetime for TIMESTAMP columns."""
+    cleaned = iso_str.replace("Z", "+00:00")
+    dt = datetime.fromisoformat(cleaned)
+    # Strip timezone — DB columns are naive TIMESTAMP
+    return dt.replace(tzinfo=None)
+
+
 # ---------------------------------------------------------------------------
 # Pilot Region Locations
 # ---------------------------------------------------------------------------
@@ -120,7 +128,7 @@ class IngestionPipeline:
                          rainfall=EXCLUDED.rainfall, temperature=EXCLUDED.temperature,
                          humidity=EXCLUDED.humidity, wind_speed=EXCLUDED.wind_speed,
                          wind_direction=EXCLUDED.wind_direction, weather_code=EXCLUDED.weather_code"""),
-                        {"location_id": location_id, "timestamp": record["time"].replace("T", " ").replace("Z", ""),
+                        {"location_id": location_id, "timestamp": _parse_naive_dt(record["time"]),
                          "rainfall": record.get("precipitation", record.get("rain")),
                          "temperature": record.get("temperature_2m"), "humidity": record.get("relative_humidity_2m"),
                          "wind_speed": record.get("wind_speed_10m"), "wind_direction": record.get("wind_direction_10m"),
@@ -140,7 +148,7 @@ class IngestionPipeline:
                          rain_12h=EXCLUDED.rain_12h, rain_24h=EXCLUDED.rain_24h, rain_72h=EXCLUDED.rain_72h,
                          rainfall_intensity=EXCLUDED.rainfall_intensity,
                          rainfall_acceleration=EXCLUDED.rainfall_acceleration"""),
-                        {"location_id": location_id, "timestamp": feature_time.replace("T", " ").replace("Z", ""),
+                        {"location_id": location_id, "timestamp": _parse_naive_dt(feature_time),
                          "rain_1h": rainfall_features.get("rain_1h"), "rain_3h": rainfall_features.get("rain_3h"),
                          "rain_6h": rainfall_features.get("rain_6h"), "rain_12h": rainfall_features.get("rain_12h"),
                          "rain_24h": rainfall_features.get("rain_24h"), "rain_72h": rainfall_features.get("rain_72h"),
@@ -161,7 +169,7 @@ class IngestionPipeline:
                     "status": "error",
                     "error": str(e),
                 }
-                print(f"  ⚠ Error for {name}: {e}")
+                print(f"  [!] Error for {name}: {e}")
 
         if own_session:
             await session.commit()
@@ -242,7 +250,7 @@ class IngestionPipeline:
                 print(f"  Extracted terrain features for {len(features)} locations from DEM.")
                 return features
             except Exception as e:
-                print(f"  ⚠ DEM processing failed: {e}")
+                print(f"  [!] DEM processing failed: {e}")
 
         # Fallback: use known elevation data
         print("  Using fallback terrain data (no DEM file found).")
@@ -280,7 +288,7 @@ class IngestionPipeline:
         landslide_path = os.path.join("data", "landslides", "kedarnath_landslide_susceptibility.json")
 
         if not os.path.exists(landslide_path):
-            print("  ⚠ Landslide data not found.")
+            print("  [!] Landslide data not found.")
             return None
 
         with open(landslide_path, "r") as f:

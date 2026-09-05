@@ -19,6 +19,7 @@ from datetime import datetime
 from sqlalchemy import text
 
 from backend.services.arrival_time.arrival_estimator import ArrivalTimeEstimator
+from backend.services.prediction.flood_intensity import FloodIntensityEstimator
 
 
 # Bridge and road data from Phase 2
@@ -36,6 +37,7 @@ class ExposureAnalyzer:
 
     def __init__(self):
         self.arrival_estimator = ArrivalTimeEstimator()
+        self.intensity_estimator = FloodIntensityEstimator()
         self._bridges = None
         self._roads = None
 
@@ -73,11 +75,31 @@ class ExposureAnalyzer:
         bridges = self._load_bridges()
         roads = self._load_roads()
 
+        # Compute flood intensity for withstand assessments
+        from backend.services.prediction.prediction_service import STATIC_FEATURES
+        origin_key = origin_name.lower()
+        static = STATIC_FEATURES.get(origin_key, {})
+        intensity_result = self.intensity_estimator.estimate_intensity(
+            flood_probability=origin_probability,
+            rainfall={"rain_6h": 0, "rain_24h": 0, "rain_72h": 0,
+                      "rainfall_intensity": rainfall_intensity, "rainfall_acceleration": 0},
+            forecast={"forecast_rain_3h": 0, "forecast_rain_6h": 0},
+            static_features=static,
+        )
+        intensity_level = intensity_result.get("intensity_level", "LOW")
+
         # Assess each bridge
         exposed_bridges = []
         for bridge in bridges:
             exposure = self._assess_bridge_exposure(bridge, arrivals)
             if exposure is not None:
+                withstand = self.intensity_estimator.assess_withstand(
+                    intensity_level=intensity_level,
+                    asset_vulnerability=exposure.get("vulnerability", "unknown"),
+                    asset_type="bridge",
+                    importance=exposure.get("importance", "unknown"),
+                )
+                exposure["withstand"] = withstand
                 exposed_bridges.append(exposure)
 
         # Assess each road segment
@@ -85,6 +107,13 @@ class ExposureAnalyzer:
         for road in roads:
             exposure = self._assess_road_exposure(road, arrivals)
             if exposure is not None:
+                withstand = self.intensity_estimator.assess_withstand(
+                    intensity_level=intensity_level,
+                    asset_vulnerability=exposure.get("vulnerability", "unknown"),
+                    asset_type="road",
+                    importance=exposure.get("importance", "unknown"),
+                )
+                exposure["withstand"] = withstand
                 exposed_roads.append(exposure)
 
         # Sort by priority
@@ -102,6 +131,7 @@ class ExposureAnalyzer:
                 a for a in (exposed_bridges + exposed_roads)
                 if a.get("risk_level") in ("HIGH", "CRITICAL")
             ],
+            "flood_intensity": intensity_result,
         }
 
     async def analyze_from_database(

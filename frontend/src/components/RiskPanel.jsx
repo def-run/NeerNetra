@@ -2,10 +2,10 @@
  * NeerNetra -- RiskPanel
  * ========================
  * Flood risk assessment for the selected location: probability gauge,
- * risk level, confidence, and driving factors.
+ * risk level, confidence, driving factors, and flood intensity badge.
  */
 
-import { riskColor, formatPct } from '../utils/constants';
+import { riskColor, intensityColor, formatPct } from '../utils/constants';
 
 function RiskPanel({ riskData, loading }) {
   if (loading && !riskData) {
@@ -32,6 +32,7 @@ function RiskPanel({ riskData, loading }) {
   const conf = riskData.confidence || {};
   const drivers = riskData.drivers || [];
   const cascade = riskData.cascade;
+  const intensity = riskData.flood_intensity;
   const station = riskData.location?.nearest_station || riskData.location?.name || 'Unknown';
 
   return (
@@ -48,6 +49,37 @@ function RiskPanel({ riskData, loading }) {
         <span className="risk-level-badge" style={{ borderColor: color, color }}>{level}</span>
         <span className="gauge-label">{formatPct(prob, 1)}</span>
       </div>
+
+      {/* Flood intensity section */}
+      {intensity && (
+        <div className="intensity-section">
+          <div className="intensity-row">
+            <span className="intensity-label">Flood intensity</span>
+            <span
+              className="intensity-badge"
+              style={{
+                color: intensityColor(intensity.intensity_level),
+                borderColor: intensityColor(intensity.intensity_level),
+              }}
+            >
+              {intensity.intensity_level}
+            </span>
+            <span className="intensity-score">{formatPct(intensity.intensity_score, 0)}</span>
+          </div>
+          {intensity.description && (
+            <p className="intensity-desc">{intensity.description}</p>
+          )}
+          {intensity.impact_summary && (
+            <div className="intensity-impacts">
+              <span>Depth: {intensity.impact_summary.water_depth}</span>
+              <span>Flow: {intensity.impact_summary.flow_velocity}</span>
+              {intensity.impact_summary.evacuation_needed && (
+                <span className="intensity-evac-flag">⚠ Evacuation recommended</span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="confidence-row">
         <span className="conf-label">Confidence</span>

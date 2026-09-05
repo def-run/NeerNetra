@@ -3,24 +3,52 @@
  * ========================
  * Last Safe Evacuation Time for every location downstream of the
  * selected flood origin, sorted by urgency (most urgent first).
+ *
+ * When the real-time flood probability is low (< 0.25), the panel
+ * shows a "no evacuation needed" state instead of computing LSET
+ * with a fake probability.
  */
 
 import { useState, useEffect } from 'react';
 import { dynamicsAPI } from '../services/api';
-import { urgencyColor, URGENCY_LABELS, formatMinutes } from '../utils/constants';
+import { urgencyColor, URGENCY_LABELS, formatMinutes, formatPct } from '../utils/constants';
 
 function LSETPanel({ origin, probability, rainfallIntensity }) {
   const [lsetData, setLsetData] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const isLowRisk = probability < 0.25;
+
   useEffect(() => {
-    if (!origin) return;
+    if (!origin || isLowRisk) {
+      setLsetData(null);
+      return;
+    }
     setLoading(true);
-    dynamicsAPI.getAllLSET(origin, probability || 0.8, rainfallIntensity || 1.0)
+    dynamicsAPI.getAllLSET(origin, probability, rainfallIntensity || 0.5)
       .then((res) => setLsetData(res.data))
       .catch((err) => console.error('LSET error:', err))
       .finally(() => setLoading(false));
-  }, [origin, probability, rainfallIntensity]);
+  }, [origin, probability, rainfallIntensity, isLowRisk]);
+
+  if (isLowRisk) {
+    return (
+      <div className="panel-card">
+        <h3>Evacuation timeline</h3>
+        <div className="low-risk-info">
+          <span className="low-risk-icon">✓</span>
+          <div>
+            <p className="low-risk-title">No evacuation timeline needed</p>
+            <p className="low-risk-desc">
+              Current flood probability is {formatPct(probability)} — risk level is LOW.
+              Evacuation timelines are computed when flood probability exceeds 25%.
+            </p>
+          </div>
+        </div>
+        <p className="disclaimer-text">Planning estimate. Not a guarantee. Follow official evacuation orders.</p>
+      </div>
+    );
+  }
 
   const results = lsetData?.lset_results || [];
 
