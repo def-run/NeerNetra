@@ -128,7 +128,11 @@ class IngestionPipeline:
                          rainfall=EXCLUDED.rainfall, temperature=EXCLUDED.temperature,
                          humidity=EXCLUDED.humidity, wind_speed=EXCLUDED.wind_speed,
                          wind_direction=EXCLUDED.wind_direction, weather_code=EXCLUDED.weather_code"""),
+<<<<<<< HEAD
                         {"location_id": location_id, "timestamp": _parse_naive_dt(record["time"]),
+=======
+                        {"location_id": location_id, "timestamp": record["time"].replace("T", " ").replace("Z", ""),
+>>>>>>> 2847940c9ccf213acf1743c05f2f4ea33dde7ee7
                          "rainfall": record.get("precipitation", record.get("rain")),
                          "temperature": record.get("temperature_2m"), "humidity": record.get("relative_humidity_2m"),
                          "wind_speed": record.get("wind_speed_10m"), "wind_direction": record.get("wind_direction_10m"),
@@ -148,7 +152,11 @@ class IngestionPipeline:
                          rain_12h=EXCLUDED.rain_12h, rain_24h=EXCLUDED.rain_24h, rain_72h=EXCLUDED.rain_72h,
                          rainfall_intensity=EXCLUDED.rainfall_intensity,
                          rainfall_acceleration=EXCLUDED.rainfall_acceleration"""),
+<<<<<<< HEAD
                         {"location_id": location_id, "timestamp": _parse_naive_dt(feature_time),
+=======
+                        {"location_id": location_id, "timestamp": feature_time.replace("T", " ").replace("Z", ""),
+>>>>>>> 2847940c9ccf213acf1743c05f2f4ea33dde7ee7
                          "rain_1h": rainfall_features.get("rain_1h"), "rain_3h": rainfall_features.get("rain_3h"),
                          "rain_6h": rainfall_features.get("rain_6h"), "rain_12h": rainfall_features.get("rain_12h"),
                          "rain_24h": rainfall_features.get("rain_24h"), "rain_72h": rainfall_features.get("rain_72h"),
