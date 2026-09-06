@@ -56,7 +56,15 @@ Follow these steps to run the complete NeerNetra flash flood prediction system o
 - **Git**
 - **Docker Desktop** (optional, for the containerized setup)
 
-### Docker Setup
+### Step 1: Clone the Repository
+```bash
+git clone https://github.com/def-run/neernetra.git
+cd neernetra
+```
+
+Choose **one** of the following execution options.
+
+### Option A: Docker Setup
 
 Docker runs the PostgreSQL/PostGIS database, FastAPI backend, and React frontend together.
 
@@ -88,16 +96,10 @@ The PostgreSQL data is stored in the Docker volume `pgdata` and remains availabl
 the containers are stopped. Docker is optional; the frontend and backend can also be
 run directly using the manual setup below.
 
-### Step 1: Clone the Repository
-```bash
-git clone https://github.com/def-run/neernetra.git
-cd neernetra
-```
+### Option B: Manual Setup (without Docker)
 
-### Manual Setup (without Docker)
-
-Skip the following manual steps if you are using Docker. The Docker setup above
-already installs dependencies and starts the database, backend, and frontend.
+Use this option only if you are not using Docker. You must install and start the
+database, backend, and frontend separately.
 
 ### Step 2: Install Backend Dependencies & Start Server
 The backend is a FastAPI application that orchestrates weather ingestion, ML inference, and flood dynamics.
