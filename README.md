@@ -94,6 +94,11 @@ git clone https://github.com/def-run/neernetra.git
 cd neernetra
 ```
 
+### Manual Setup (without Docker)
+
+Skip the following manual steps if you are using Docker. The Docker setup above
+already installs dependencies and starts the database, backend, and frontend.
+
 ### Step 2: Install Backend Dependencies & Start Server
 The backend is a FastAPI application that orchestrates weather ingestion, ML inference, and flood dynamics.
 
