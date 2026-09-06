@@ -54,6 +54,39 @@ Follow these steps to run the complete NeerNetra flash flood prediction system o
 - **Python 3.11+**
 - **Node.js 18+** (with npm)
 - **Git**
+- **Docker Desktop** (optional, for the containerized setup)
+
+### Docker Setup
+
+Docker runs the PostgreSQL/PostGIS database, FastAPI backend, and React frontend together.
+
+From the repository root, start Docker Desktop and run:
+
+```bash
+docker compose up --build
+```
+
+In a second terminal, seed the pilot locations and demo data once:
+
+```bash
+docker compose exec backend python -m backend.database.bootstrap
+```
+
+Open the application at:
+
+- **Dashboard:** `http://localhost:5173`
+- **API docs:** `http://localhost:8000/docs`
+- **Health check:** `http://localhost:8000/health`
+
+Stop the containers with `Ctrl+C`, or from another terminal:
+
+```bash
+docker compose down
+```
+
+The PostgreSQL data is stored in the Docker volume `pgdata` and remains available when
+the containers are stopped. Docker is optional; the frontend and backend can also be
+run directly using the manual setup below.
 
 ### Step 1: Clone the Repository
 ```bash

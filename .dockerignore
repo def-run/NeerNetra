@@ -1,0 +1,16 @@
+.env
+.git
+.gitignore
+.github
+.venv
+venv
+__pycache__
+*.py[cod]
+*.log
+*.rar
+node_modules
+frontend/dist
+data
+notebooks
+tests
+*.ipynb

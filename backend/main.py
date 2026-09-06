@@ -58,7 +58,6 @@ async def lifespan(app: FastAPI):
             minutes=settings.data_refresh_interval_minutes,
             id="weather_ingestion",
             name="Weather Data Ingestion",
-            next_run_time=None,
         )
         scheduler.start()
         print("[NeerNetra] APScheduler started (weather ingestion every 30 min)")
