@@ -1,0 +1,32 @@
+{
+  "trained_at": "2026-08-29T06:03:57.441991+00:00",
+  "dataset_size": 5000,
+  "flood_ratio": 0.15,
+  "best_model": "logistic_regression",
+  "results": {
+    "logistic_regression": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "accuracy": 1.0
+    },
+    "random_forest": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "accuracy": 1.0
+    },
+    "xgboost": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0,
+      "pr_auc": 1.0,
+      "accuracy": 1.0
+    }
+  }
+}
