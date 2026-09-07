@@ -153,7 +153,7 @@ class WeatherClient:
         params = {
             "latitude": lat,
             "longitude": lon,
-            "hourly": "precipitation,rain",
+            "hourly": ",".join(HOURLY_VARIABLES),
             "past_days": days_back,
             "forecast_days": 1,
             "timezone": "UTC",

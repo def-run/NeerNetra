@@ -384,4 +384,6 @@ class PredictionService:
             drivers.append({"factor": "Landslide susceptibility", "value": f"{static['landslide_susceptibility']}"})
         if static.get("slope", 0) > 25:
             drivers.append({"factor": "Steep terrain", "value": f"{static['slope']} deg"})
-        return drivers[:5]
+        return drivers[:5] or [
+            {"factor": "Baseline model assessment", "value": "No elevated drivers detected"}
+        ]

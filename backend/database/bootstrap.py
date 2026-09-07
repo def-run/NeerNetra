@@ -48,10 +48,25 @@ async def bootstrap() -> dict:
         for loc in PILOT_LOCATIONS:
             await session.execute(
                 text(
-                    """INSERT INTO locations (name, latitude, longitude, elevation, geometry)
-                    VALUES (:name, :lat, :lon, :elev, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326))
+                    """INSERT INTO locations (
+                        name, latitude, longitude, elevation, slope, aspect,
+                        terrain_ruggedness, distance_to_waterbody,
+                        historical_flood_frequency, historical_flood_susceptibility,
+                        geometry
+                    )
+                    VALUES (
+                        :name, :lat, :lon, :elev, :slope, :aspect,
+                        :terrain_ruggedness, :distance_to_waterbody,
+                        :historical_flood_frequency, :historical_flood_susceptibility,
+                        ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)
+                    )
                     ON CONFLICT (name) DO UPDATE SET latitude=EXCLUDED.latitude,
                     longitude=EXCLUDED.longitude, elevation=EXCLUDED.elevation,
+                    slope=EXCLUDED.slope, aspect=EXCLUDED.aspect,
+                    terrain_ruggedness=EXCLUDED.terrain_ruggedness,
+                    distance_to_waterbody=EXCLUDED.distance_to_waterbody,
+                    historical_flood_frequency=EXCLUDED.historical_flood_frequency,
+                    historical_flood_susceptibility=EXCLUDED.historical_flood_susceptibility,
                     geometry=EXCLUDED.geometry"""
                 ),
                 loc,

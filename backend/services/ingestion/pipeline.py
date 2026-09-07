@@ -91,11 +91,11 @@ class IngestionPipeline:
                     forecast_hours=48,
                 )
 
-                # Fetch recent rainfall (7 days back)
+                # Fetch recent rainfall with one extra day to cover inclusive API boundaries.
                 recent = await self.weather_client.fetch_recent_rainfall(
                     lat=loc["lat"],
                     lon=loc["lon"],
-                    days_back=7,
+                    days_back=8,
                 )
 
                 # Compute rainfall accumulation windows

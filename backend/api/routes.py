@@ -194,13 +194,37 @@ async def get_propagation(
     )
     prediction_id = prediction_row.scalar_one()
     for step in result["time_steps"]:
+        result_data = json.dumps(step)
+        arrival_time_grid = json.dumps({
+            location["name"]: location["time"]
+            for location in step["affected_locations"]
+        })
         await db.execute(
             text("""INSERT INTO propagation_results
-            (prediction_id, time_step_minutes, result_data)
-            VALUES (:prediction_id, :minutes, CAST(:result_data AS jsonb))
-            ON CONFLICT (prediction_id, time_step_minutes) DO UPDATE SET result_data=EXCLUDED.result_data"""),
+            (prediction_id, time_step_minutes, affected_area, arrival_time_grid, result_data)
+            VALUES (
+                :prediction_id,
+                :minutes,
+                (
+                    SELECT ST_Multi(ST_Buffer(ST_ConvexHull(ST_Collect(
+                        ST_SetSRID(ST_MakePoint(
+                            (location->>'lon')::double precision,
+                            (location->>'lat')::double precision
+                        ), 4326)
+                    )), 0.005))
+                    FROM jsonb_array_elements(
+                        CAST(:result_data AS jsonb)->'affected_locations'
+                    ) AS location
+                ),
+                CAST(:arrival_time_grid AS jsonb),
+                CAST(:result_data AS jsonb)
+            )
+            ON CONFLICT (prediction_id, time_step_minutes) DO UPDATE SET
+                affected_area=EXCLUDED.affected_area,
+                arrival_time_grid=EXCLUDED.arrival_time_grid,
+                result_data=EXCLUDED.result_data"""),
             {"prediction_id": prediction_id, "minutes": step["minutes_elapsed"],
-             "result_data": json.dumps(step)},
+             "result_data": result_data, "arrival_time_grid": arrival_time_grid},
         )
     return result
 

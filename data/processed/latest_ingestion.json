@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-09-07T07:16:30.728209+00:00",
+  "locations_processed": 10,
+  "weather_success": 10,
+  "weather_errors": 0,
+  "terrain_available": true,
+  "ancillary_loaded": true,
+  "weather_rows_written": 2160,
+  "rainfall_feature_rows_written": 10
+}

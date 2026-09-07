@@ -140,37 +140,6 @@ class ExposureAnalyzer:
     ) -> dict:
         """Run the same proximity analysis using PostGIS-seeded assets."""
         rows = await session.execute(text("""SELECT source_id, asset_type, name,
-            risk_level, priority, ST_AsGeoJSON(geometry) AS geometry
-            FROM infrastructure WHERE geometry IS NOT NULL"""))
-        features = []
-        for row in rows:
-            item = dict(row._mapping)
-            geometry = json.loads(item.pop("geometry"))
-            features.append({"properties": item, "geometry": geometry})
-        bridges = [f for f in features if f["properties"]["asset_type"] == "bridge"]
-        roads = [f for f in features if f["properties"]["asset_type"] == "road"]
-        arrivals = self.arrival_estimator.estimate_for_all_downstream(
-            origin_name=origin_name, origin_probability=origin_probability,
-            rainfall_intensity=rainfall_intensity, start_time=start_time or datetime.utcnow(),
-        )
-        exposed_bridges = [x for x in (self._assess_bridge_exposure(f, arrivals) for f in bridges) if x]
-        exposed_roads = [x for x in (self._assess_road_exposure(f, arrivals) for f in roads) if x]
-        return {
-            "origin": origin_name, "origin_probability": origin_probability,
-            "exposed_bridges": exposed_bridges, "exposed_roads": exposed_roads,
-            "total_bridges_at_risk": len(exposed_bridges),
-            "total_road_segments_at_risk": len(exposed_roads),
-            "critical_assets": [a for a in exposed_bridges + exposed_roads
-                                if a.get("risk_level") in ("HIGH", "CRITICAL")],
-            "data_source": "postgresql/postgis",
-        }
-
-    async def analyze_from_database(
-        self, session, origin_name: str, origin_probability: float,
-        rainfall_intensity: float = 1.0, start_time: Optional[datetime] = None,
-    ) -> dict:
-        """Run the same proximity analysis using PostGIS-seeded assets."""
-        rows = await session.execute(text("""SELECT source_id, asset_type, name,
             risk_level AS flood_vulnerability,
             priority AS importance,
             ST_AsGeoJSON(geometry) AS geometry
@@ -188,6 +157,50 @@ class ExposureAnalyzer:
         )
         exposed_bridges = [x for x in (self._assess_bridge_exposure(f, arrivals) for f in bridges) if x]
         exposed_roads = [x for x in (self._assess_road_exposure(f, arrivals) for f in roads) if x]
+        for exposure in exposed_bridges + exposed_roads:
+            if exposure.get("source_id") and exposure.get("estimated_flood_arrival"):
+                await session.execute(
+                    text("""UPDATE infrastructure
+                        SET estimated_arrival_time = :arrival,
+                            exposure_duration_minutes = :duration
+                        WHERE source_id = :source_id"""),
+                    {
+                        "source_id": exposure["source_id"],
+                        "arrival": datetime.fromisoformat(exposure["estimated_flood_arrival"]),
+                        "duration": exposure.get("time_remaining_minutes"),
+                    },
+                )
+        persisted_ids = {
+            exposure.get("source_id")
+            for exposure in exposed_bridges + exposed_roads
+        }
+        for feature in features:
+            properties = feature["properties"]
+            source_id = properties.get("source_id")
+            if not source_id or source_id in persisted_ids:
+                continue
+            coordinates = feature["geometry"].get("coordinates", [])
+            if properties["asset_type"] == "road" and coordinates:
+                midpoint = coordinates[len(coordinates) // 2]
+                asset_lon, asset_lat = midpoint[0], midpoint[1]
+            elif properties["asset_type"] == "bridge" and len(coordinates) >= 2:
+                asset_lon, asset_lat = coordinates[0], coordinates[1]
+            else:
+                continue
+            nearest = self._find_nearest_arrival(asset_lat, asset_lon, arrivals)
+            if nearest and nearest.get("estimated_arrival_time"):
+                await session.execute(
+                    text("""UPDATE infrastructure
+                        SET estimated_arrival_time = :arrival,
+                            exposure_duration_minutes = 0
+                        WHERE source_id = :source_id"""),
+                    {
+                        "source_id": source_id,
+                        "arrival": datetime.fromisoformat(
+                            nearest["estimated_arrival_time"]
+                        ),
+                    },
+                )
         return {
             "origin": origin_name, "origin_probability": origin_probability,
             "exposed_bridges": exposed_bridges, "exposed_roads": exposed_roads,
@@ -225,6 +238,7 @@ class ExposureAnalyzer:
 
         return {
             "asset_type": "bridge",
+            "source_id": props.get("source_id"),
             "name": props.get("name", "Unknown Bridge"),
             "bridge_type": props.get("bridge_type", "unknown"),
             "span_m": props.get("span_m"),
@@ -271,6 +285,7 @@ class ExposureAnalyzer:
 
         return {
             "asset_type": "road",
+            "source_id": props.get("source_id"),
             "name": props.get("name", "Unknown Road"),
             "road_type": props.get("road_type", "unknown"),
             "nearest_affected_location": nearest.get("location"),
