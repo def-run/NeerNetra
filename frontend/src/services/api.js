@@ -8,7 +8,9 @@
 
 import axios from 'axios';
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/';
+// Local Vite development runs on port 5173 while FastAPI runs on port 8000.
+// Docker supplies "/" at build time so nginx can proxy API requests internally.
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

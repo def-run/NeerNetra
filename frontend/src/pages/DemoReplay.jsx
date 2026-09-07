@@ -71,11 +71,29 @@ function DemoReplay() {
           </label>
           <label className="field-label">
             Probability: <span className="field-value">{Math.round(probability * 100)}%</span>
-            <input type="range" min={0.1} max={1} step={0.05} value={probability} onChange={(e) => setProbability(Number(e.target.value))} className="range-input" />
+            <input
+              type="range"
+              min={0.1}
+              max={1}
+              step={0.05}
+              value={probability}
+              onChange={(e) => setProbability(Number(e.target.value))}
+              className="range-input"
+              style={{ '--slider-progress': `${((probability - 0.1) / 0.9) * 100}%` }}
+            />
           </label>
           <label className="field-label">
             Rain intensity: <span className="field-value">{rainfallIntensity.toFixed(1)}x</span>
-            <input type="range" min={0.5} max={3} step={0.1} value={rainfallIntensity} onChange={(e) => setRainfallIntensity(Number(e.target.value))} className="range-input" />
+            <input
+              type="range"
+              min={0.5}
+              max={3}
+              step={0.1}
+              value={rainfallIntensity}
+              onChange={(e) => setRainfallIntensity(Number(e.target.value))}
+              className="range-input"
+              style={{ '--slider-progress': `${((rainfallIntensity - 0.5) / 2.5) * 100}%` }}
+            />
           </label>
         </div>
       </div>

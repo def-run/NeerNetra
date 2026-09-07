@@ -86,7 +86,9 @@ function LSETPanel({ origin, probability, rainfallIntensity }) {
                   </div>
                 )}
                 {item.confidence && (
-                  <span className="lset-confidence">confidence: {item.confidence.toLowerCase()}</span>
+                  <span className={`lset-confidence lset-confidence-${item.confidence.toLowerCase().replace(/\s+/g, '-')}`}>
+                    confidence: {item.confidence.toLowerCase()}
+                  </span>
                 )}
               </div>
             );

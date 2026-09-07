@@ -42,12 +42,14 @@ function RiskPanel({ riskData, loading }) {
         <span className="location-tag">{station}</span>
       </div>
 
-      <div className="risk-gauge">
-        <div className="gauge-fill" style={{ width: `${Math.min(prob * 100, 100)}%`, background: color }} />
-      </div>
-      <div className="risk-gauge-row">
-        <span className="risk-level-badge" style={{ borderColor: color, color }}>{level}</span>
-        <span className="gauge-label">{formatPct(prob, 1)}</span>
+      <div className="risk-overview">
+        <div className="risk-gauge">
+          <div className="gauge-fill" style={{ width: `${Math.min(prob * 100, 100)}%`, background: color }} />
+        </div>
+        <div className="risk-gauge-row">
+          <span className="risk-level-badge" style={{ borderColor: color, color }}>{level}</span>
+          <span className="gauge-label">{formatPct(prob, 1)}</span>
+        </div>
       </div>
 
       {/* Flood intensity section */}
@@ -64,11 +66,7 @@ function RiskPanel({ riskData, loading }) {
             >
               {intensity.intensity_level}
             </span>
-            <span className="intensity-score">{formatPct(intensity.intensity_score, 0)}</span>
           </div>
-          {intensity.description && (
-            <p className="intensity-desc">{intensity.description}</p>
-          )}
           {intensity.impact_summary && (
             <div className="intensity-impacts">
               <span>Depth: {intensity.impact_summary.water_depth}</span>
@@ -81,13 +79,15 @@ function RiskPanel({ riskData, loading }) {
         </div>
       )}
 
-      <div className="confidence-row">
-        <span className="conf-label">Confidence</span>
-        <span className={`conf-value conf-${(conf.confidence_level || '').toLowerCase()}`}>
-          {conf.confidence_level || 'N/A'} ({formatPct(conf.confidence_score)})
-        </span>
+      <div className="confidence-section">
+        <div className="confidence-row">
+          <span className="conf-label">Confidence</span>
+          <span className={`conf-value conf-${String(conf.confidence_level || '').toLowerCase().replace(/\s+/g, '_')}`}>
+            {conf.confidence_level || 'N/A'} ({formatPct(conf.confidence_score)})
+          </span>
+        </div>
+        {conf.recommendation && <p className="conf-recommendation">{conf.recommendation}</p>}
       </div>
-      {conf.recommendation && <p className="conf-recommendation">{conf.recommendation}</p>}
 
       {cascade && (
         <div className="risk-cascade-inline">

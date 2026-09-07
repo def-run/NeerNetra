@@ -66,8 +66,8 @@ function FloodMap({
       style={{ height: '100%', width: '100%', minHeight: '400px' }}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_2qer_1_ae4b94f6df897e006d13c802"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
       {onMapClick && <ClickCatcher onMapClick={onMapClick} />}

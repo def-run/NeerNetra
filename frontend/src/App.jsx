@@ -5,7 +5,8 @@
  */
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import NavBar from './components/NavBar';
+import TopBar from './components/TopBar';
+import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Explorer from './pages/Explorer';
 import Locations from './pages/Locations';
@@ -17,20 +18,19 @@ function App() {
   return (
     <BrowserRouter>
       <div className="app-shell">
-        <NavBar />
-        <main className="app-main">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/explorer" element={<Explorer />} />
-            <Route path="/locations" element={<Locations />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/demo" element={<DemoReplay />} />
-          </Routes>
-        </main>
-        <footer className="app-footer">
-          <span>NeerNetra &mdash; Flash Flood Risk Prediction for the Kedarnath / Mandakini Valley</span>
-          <span>Decision-support estimates only. Always follow official evacuation orders.</span>
-        </footer>
+        <TopBar />
+        <div className="app-body">
+          <Sidebar />
+          <main className="app-main">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/explorer" element={<Explorer />} />
+              <Route path="/locations" element={<Locations />} />
+              <Route path="/history" element={<History />} />
+              <Route path="/demo" element={<DemoReplay />} />
+            </Routes>
+          </main>
+        </div>
       </div>
     </BrowserRouter>
   );

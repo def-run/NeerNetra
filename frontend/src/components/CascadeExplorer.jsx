@@ -75,11 +75,27 @@ function CascadeExplorer({ locations }) {
 
       <label className="field-label">
         6h rainfall: <span className="field-value">{rain6h} mm</span>
-        <input type="range" min={0} max={200} value={rain6h} onChange={(e) => setRain6h(Number(e.target.value))} className="range-input" />
+        <input
+          type="range"
+          min={0}
+          max={200}
+          value={rain6h}
+          onChange={(e) => setRain6h(Number(e.target.value))}
+          className="range-input"
+          style={{ '--slider-progress': `${(rain6h / 200) * 100}%` }}
+        />
       </label>
       <label className="field-label">
         24h rainfall: <span className="field-value">{rain24h} mm</span>
-        <input type="range" min={0} max={350} value={rain24h} onChange={(e) => setRain24h(Number(e.target.value))} className="range-input" />
+        <input
+          type="range"
+          min={0}
+          max={350}
+          value={rain24h}
+          onChange={(e) => setRain24h(Number(e.target.value))}
+          className="range-input"
+          style={{ '--slider-progress': `${(rain24h / 350) * 100}%` }}
+        />
       </label>
 
       {result && (

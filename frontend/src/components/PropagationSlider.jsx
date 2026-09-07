@@ -55,6 +55,7 @@ function PropagationSlider({ propagation }) {
           value={currentStep}
           onChange={(e) => { setCurrentStep(Number(e.target.value)); setPlaying(false); }}
           className="slider-range"
+          style={{ '--slider-progress': `${maxStep ? (currentStep / maxStep) * 100 : 0}%` }}
         />
         <span className="slider-step-label">{currentStep}/{maxStep}</span>
       </div>
