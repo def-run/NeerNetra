@@ -5,6 +5,7 @@
  * 3-hour bars so 24/48/72h windows all stay legible without a
  * charting library.
  */
+/* oxlint-disable react/set-state-in-effect -- synchronizes remote forecast data. */
 
 import { useState, useEffect, useCallback } from 'react';
 import { weatherAPI } from '../services/api';

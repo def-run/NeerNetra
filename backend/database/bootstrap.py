@@ -36,6 +36,7 @@ async def bootstrap() -> dict:
             "UPDATE infrastructure SET source_id = asset_type || chr(58) || 'legacy-' || id::text WHERE source_id IS NULL",
             "CREATE UNIQUE INDEX IF NOT EXISTS uq_infrastructure_source_id ON infrastructure (source_id)",
             "ALTER TABLE predictions ADD COLUMN IF NOT EXISTS drivers JSONB",
+            "UPDATE predictions SET drivers = '[{\"factor\":\"Baseline model assessment\",\"value\":\"Historical prediction\"}]'::jsonb WHERE drivers IS NULL OR drivers IN ('{}'::jsonb, '[]'::jsonb)",
             "ALTER TABLE propagation_results ADD COLUMN IF NOT EXISTS result_data JSONB NOT NULL DEFAULT '{}'::jsonb",
             "ALTER TABLE propagation_results ADD COLUMN IF NOT EXISTS arrival_time_grid JSONB",
             "CREATE UNIQUE INDEX IF NOT EXISTS uq_weather_observation ON weather_observations (location_id, timestamp, source)",

@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     pilot_region_bbox_west: float = 78.90
     open_meteo_base_url: str = "https://api.open-meteo.com/v1"
     prediction_interval_minutes: int = 30
-    data_refresh_interval_minutes: int = 15
+    data_refresh_interval_minutes: int = 30
     model_path: str = "ml/saved_models/flood_random_forest.joblib"
     model_type: str = "random_forest"
     log_level: str = "INFO"

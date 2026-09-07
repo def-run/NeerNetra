@@ -24,6 +24,7 @@ import joblib
 from sqlalchemy import text
 from backend.utils.config import settings
 from backend.database.connection import async_session
+from backend.config.locations import PILOT_LOCATIONS as CANONICAL_LOCATIONS
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -41,48 +42,33 @@ from backend.services.prediction.flood_intensity import FloodIntensityEstimator
 # Pilot location lookup
 LOCATION_LOOKUP = {loc["name"].lower(): loc for loc in PILOT_NETWORK}
 
-# Static terrain/historical features per location (from Phase 2 data)
+LANDSLIDE_SUSCEPTIBILITY = {
+    "kedarnath": 0.85, "gaurikund": 0.78, "sonprayag": 0.72,
+    "rampur": 0.65, "sitapur": 0.55, "agastmuni": 0.45,
+    "rudraprayag": 0.52, "guptkashi": 0.60, "phata": 0.68,
+    "kalimath": 0.62,
+}
+
+DISTANCE_TO_ROAD = {
+    "kedarnath": 0.5, "gaurikund": 0.1, "sonprayag": 0.1,
+    "rampur": 0.2, "sitapur": 0.3, "agastmuni": 0.1,
+    "rudraprayag": 0.05, "guptkashi": 0.2, "phata": 0.1,
+    "kalimath": 0.4,
+}
+
 STATIC_FEATURES = {
-    "kedarnath":   {"elevation": 3583, "slope": 35, "aspect": 180, "terrain_ruggedness": 120,
-                    "distance_to_waterbody": 0.3, "historical_flood_frequency": 3,
-                    "historical_flood_susceptibility": 0.85, "landslide_susceptibility": 0.85,
-                    "distance_to_road": 0.5},
-    "gaurikund":   {"elevation": 1982, "slope": 28, "aspect": 200, "terrain_ruggedness": 85,
-                    "distance_to_waterbody": 0.1, "historical_flood_frequency": 5,
-                    "historical_flood_susceptibility": 0.78, "landslide_susceptibility": 0.78,
-                    "distance_to_road": 0.1},
-    "sonprayag":   {"elevation": 1829, "slope": 22, "aspect": 190, "terrain_ruggedness": 70,
-                    "distance_to_waterbody": 0.1, "historical_flood_frequency": 4,
-                    "historical_flood_susceptibility": 0.72, "landslide_susceptibility": 0.72,
-                    "distance_to_road": 0.1},
-    "rampur":      {"elevation": 1800, "slope": 18, "aspect": 210, "terrain_ruggedness": 55,
-                    "distance_to_waterbody": 0.5, "historical_flood_frequency": 2,
-                    "historical_flood_susceptibility": 0.55, "landslide_susceptibility": 0.65,
-                    "distance_to_road": 0.2},
-    "sitapur":     {"elevation": 1600, "slope": 15, "aspect": 220, "terrain_ruggedness": 45,
-                    "distance_to_waterbody": 0.4, "historical_flood_frequency": 1,
-                    "historical_flood_susceptibility": 0.45, "landslide_susceptibility": 0.55,
-                    "distance_to_road": 0.3},
-    "agastmuni":   {"elevation": 1000, "slope": 12, "aspect": 160, "terrain_ruggedness": 35,
-                    "distance_to_waterbody": 0.2, "historical_flood_frequency": 2,
-                    "historical_flood_susceptibility": 0.50, "landslide_susceptibility": 0.45,
-                    "distance_to_road": 0.1},
-    "rudraprayag": {"elevation":  610, "slope":  8, "aspect": 170, "terrain_ruggedness": 25,
-                    "distance_to_waterbody": 0.1, "historical_flood_frequency": 3,
-                    "historical_flood_susceptibility": 0.60, "landslide_susceptibility": 0.52,
-                    "distance_to_road": 0.05},
-    "guptkashi":   {"elevation": 1319, "slope": 20, "aspect": 240, "terrain_ruggedness": 60,
-                    "distance_to_waterbody": 0.3, "historical_flood_frequency": 2,
-                    "historical_flood_susceptibility": 0.55, "landslide_susceptibility": 0.60,
-                    "distance_to_road": 0.2},
-    "phata":       {"elevation": 1524, "slope": 25, "aspect": 195, "terrain_ruggedness": 75,
-                    "distance_to_waterbody": 0.2, "historical_flood_frequency": 3,
-                    "historical_flood_susceptibility": 0.65, "landslide_susceptibility": 0.68,
-                    "distance_to_road": 0.1},
-    "kalimath":    {"elevation": 1463, "slope": 18, "aspect": 230, "terrain_ruggedness": 50,
-                    "distance_to_waterbody": 0.6, "historical_flood_frequency": 2,
-                    "historical_flood_susceptibility": 0.50, "landslide_susceptibility": 0.62,
-                    "distance_to_road": 0.4},
+    location["name"].lower(): {
+        "elevation": location["elev"],
+        "slope": location["slope"],
+        "aspect": location["aspect"],
+        "terrain_ruggedness": location["terrain_ruggedness"],
+        "distance_to_waterbody": location["distance_to_waterbody"],
+        "historical_flood_frequency": location["historical_flood_frequency"],
+        "historical_flood_susceptibility": location["historical_flood_susceptibility"],
+        "landslide_susceptibility": LANDSLIDE_SUSCEPTIBILITY[location["name"].lower()],
+        "distance_to_road": DISTANCE_TO_ROAD[location["name"].lower()],
+    }
+    for location in CANONICAL_LOCATIONS
 }
 
 

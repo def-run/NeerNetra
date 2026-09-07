@@ -1,7 +1,7 @@
 /**
  * NeerNetra -- Dashboard (Live Map)
  * ===================================
- * The main operational view: live risk map for the 9 pilot locations,
+ * The main operational view: live risk map for the 10 pilot locations,
  * click-anywhere risk querying, and a tabbed intel panel.
  *
  * LSET, Infrastructure, and Downstream tabs now use the **real-time
@@ -9,6 +9,7 @@
  * a hardcoded scenario value. Scenario simulation controls have been
  * moved to the Demo page.
  */
+/* oxlint-disable react/set-state-in-effect -- synchronizes live dashboard data. */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import FloodMap from '../maps/FloodMap';

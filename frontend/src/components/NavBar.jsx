@@ -4,6 +4,7 @@
  * Persistent top bar: brand, section nav, and a live backend status
  * pill driven by GET /health.
  */
+/* oxlint-disable react/set-state-in-effect -- synchronizes remote health state. */
 
 import { useState, useEffect, useCallback } from 'react';
 import { NavLink } from 'react-router-dom';

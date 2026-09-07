@@ -8,6 +8,7 @@
  * shows a "no evacuation needed" state instead of computing LSET
  * with a fake probability.
  */
+/* oxlint-disable react/set-state-in-effect -- synchronizes remote evacuation data. */
 
 import { useState, useEffect } from 'react';
 import { dynamicsAPI } from '../services/api';

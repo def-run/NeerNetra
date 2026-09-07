@@ -190,13 +190,16 @@ async def get_propagation(
         RETURNING id"""),
         {"location_id": location_id, "timestamp": prediction_timestamp,
          "probability": probability, "risk_level": "HIGH" if probability >= 0.5 else "MEDIUM",
-         "drivers": "{}"},
+         "drivers": json.dumps([{
+             "factor": "Propagation model",
+             "value": "Simplified drainage network",
+         }])},
     )
     prediction_id = prediction_row.scalar_one()
     for step in result["time_steps"]:
         result_data = json.dumps(step)
         arrival_time_grid = json.dumps({
-            location["name"]: location["time"]
+            location["name"]: step["time"]
             for location in step["affected_locations"]
         })
         await db.execute(

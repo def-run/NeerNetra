@@ -60,7 +60,10 @@ async def lifespan(app: FastAPI):
             name="Weather Data Ingestion",
         )
         scheduler.start()
-        print("[NeerNetra] APScheduler started (weather ingestion every 30 min)")
+        print(
+            f"[NeerNetra] APScheduler started (weather ingestion every "
+            f"{settings.data_refresh_interval_minutes} min)"
+        )
     except ImportError:
         print("[NeerNetra] APScheduler not installed -- periodic ingestion disabled")
     except Exception as e:

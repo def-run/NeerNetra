@@ -8,6 +8,7 @@
  * "minimal exposure" state when risk is low. Includes withstand
  * assessment for each asset based on flood intensity.
  */
+/* oxlint-disable react/set-state-in-effect -- synchronizes remote exposure data. */
 
 import { useState, useEffect } from 'react';
 import { dynamicsAPI } from '../services/api';

@@ -6,6 +6,7 @@
  * risk map (which uses current weather), this lets you type in
  * arbitrary rainfall to test scenarios.
  */
+/* oxlint-disable react/set-state-in-effect -- synchronizes remote scenario data. */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { dynamicsAPI } from '../services/api';

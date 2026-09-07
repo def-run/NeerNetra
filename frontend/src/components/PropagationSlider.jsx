@@ -4,6 +4,7 @@
  * Animated time slider for stepping through flood propagation from
  * the chosen origin.
  */
+/* oxlint-disable react/set-state-in-effect -- resets animation state for new data. */
 
 import { useState, useEffect, useRef } from 'react';
 import { riskColor, formatPct } from '../utils/constants';

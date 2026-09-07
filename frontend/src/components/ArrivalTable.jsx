@@ -6,6 +6,7 @@
  * Uses real-time probability from the ML prediction. Shows a
  * "no significant impact" state when risk is low.
  */
+/* oxlint-disable react/set-state-in-effect -- synchronizes remote arrival data. */
 
 import { useState, useEffect } from 'react';
 import { dynamicsAPI } from '../services/api';
