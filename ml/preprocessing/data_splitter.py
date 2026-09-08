@@ -1,9 +1,4 @@
 """
-NeerNetra — Temporal Data Splitter
-=====================================
-Splits data using temporal ordering, NOT random row-wise splitting.
-
-From Section 6.6:
   "Avoid random row-wise splitting if observations from the same event
    appear in both training and testing."
 

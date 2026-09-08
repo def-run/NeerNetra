@@ -1,10 +1,3 @@
-"""
-NeerNetra -- Demo API Routes (Phase 8)
-=========================================
-Endpoints for hackathon demo simulation.
-Controls the 2013 Kedarnath disaster replay.
-"""
-
 from fastapi import APIRouter, Query
 from backend.services.simulation.demo_simulator import DemoSimulator
 

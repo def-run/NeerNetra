@@ -1,6 +1,4 @@
 """
-NeerNetra — DEM Processor
-===========================
 Processes Digital Elevation Model (DEM) rasters using Rasterio.
 
 Reads GeoTIFF DEM files and provides methods for:

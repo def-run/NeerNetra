@@ -1,6 +1,4 @@
 """
-NeerNetra — Coordinate & Timestamp Utilities
-================================================
 Standardizes all geospatial data to a common CRS (EPSG:4326)
 and all timestamps to UTC.
 

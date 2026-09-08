@@ -1,6 +1,4 @@
 """
-NeerNetra -- Phase 7: End-to-End Integration Tests
-=====================================================
 Validates the complete pipeline from data ingestion through
 API response. Tests run against the live backend server.
 

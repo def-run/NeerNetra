@@ -1,15 +1,5 @@
 """
-NeerNetra -- Infrastructure Exposure Analyzer
-=================================================
 Assesses flood exposure for roads and bridges.
-
-From Section 7.8:
-  - Road/bridge geometries intersected with flood extent
-  - Output: asset type, location, flood-risk level, estimated arrival time,
-    exposure duration, priority
-
-For MVP: uses point/line proximity analysis with the flood propagation
-footprint. Does not require full raster intersection.
 """
 
 import json

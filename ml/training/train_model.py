@@ -1,14 +1,11 @@
 """
-NeerNetra — Model Training Pipeline
-=======================================
 Trains and compares flood prediction models.
 
-From Section 6.2:
   Primary MVP: Random Forest Classifier
   Advanced: XGBoost Classifier
   Baseline: Logistic Regression
 
-Training process (Section 6.5):
+Training process:
   1. Generate / load dataset
   2. Temporal train/val/test split (Section 6.6)
   3. Build feature matrices
@@ -17,8 +14,6 @@ Training process (Section 6.5):
   6. Train XGBoost
   7. Evaluate all models (Section 6.7)
   8. Save the best model
-
-"Do not claim XGBoost is better until it has actually been evaluated."
 """
 
 import os

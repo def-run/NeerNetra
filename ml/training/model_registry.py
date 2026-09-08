@@ -1,6 +1,4 @@
 """
-NeerNetra — Model Registry
-==============================
 Save, load, and manage trained ML models with metadata.
 
 Serializes models using joblib along with:

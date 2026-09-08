@@ -1,13 +1,9 @@
 """
-NeerNetra — Open-Meteo Weather Client
-=======================================
 Fetches current weather, hourly forecasts, and historical rainfall
 from the Open-Meteo free API (no auth required).
 
 Data source: https://open-meteo.com/en/docs
 Format: JSON
-
-This is the primary weather data source for the hackathon MVP (Section 4.2).
 """
 
 import httpx

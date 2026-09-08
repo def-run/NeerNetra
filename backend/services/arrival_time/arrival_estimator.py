@@ -1,15 +1,4 @@
-"""
-NeerNetra -- Flood Arrival Time Estimator
-============================================
-Estimates when flooding may reach a specific downstream location.
-
-From Section 7.6:
-  - Predicted flood arrival time
-  - Time remaining until estimated arrival
-  - Arrival-time confidence/quality indicator
-
-The arrival-time output feeds the infrastructure-risk and LSET modules.
-"""
+"""The arrival-time output feeds the infrastructure-risk and LSET modules."""
 
 import numpy as np
 from datetime import datetime, timedelta

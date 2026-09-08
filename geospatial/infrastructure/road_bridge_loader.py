@@ -1,6 +1,4 @@
 """
-NeerNetra — Road & Bridge Loader
-===================================
 Loads road and bridge GeoJSON data into PostGIS and provides
 GeoPandas-based spatial operations for infrastructure analysis.
 """

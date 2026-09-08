@@ -1,20 +1,15 @@
 """
-NeerNetra -- Flood Propagation Engine
-========================================
 Simplified spatial flood propagation over a terrain grid.
 
-From Section 7.5:
   - Use a simplified raster/grid connected drainage representation
   - Start propagation from high-risk upstream cells/areas
   - Apply terrain, drainage connectivity, and configurable propagation speed
   - Store predicted affected cells with time steps
   - Visualise the changing flood footprint on the map
-
-This is a SIMPLIFIED propagation model, not a full hydrodynamic solver.
 """
 
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from backend.config.locations import PILOT_LOCATIONS as CANONICAL_LOCATIONS
 
@@ -67,7 +62,7 @@ class FloodPropagationEngine:
             dict with time-stepped propagation results
         """
         if start_time is None:
-            start_time = datetime.utcnow()
+            start_time = datetime.now(timezone.utc)
 
         # Find origin in network
         origin = self._find_location(origin_name)

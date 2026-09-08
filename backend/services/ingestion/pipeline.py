@@ -1,6 +1,4 @@
 """
-NeerNetra — Data Ingestion Pipeline
-======================================
 Orchestrates the complete data ingestion workflow:
 
 1. Fetch weather/rainfall from Open-Meteo
@@ -9,8 +7,6 @@ Orchestrates the complete data ingestion workflow:
 4. Load infrastructure data
 5. Load landslide susceptibility
 6. Store everything in PostGIS
-
-This pipeline is triggered by APScheduler (Phase 5) or run manually.
 """
 
 import os
@@ -223,9 +219,15 @@ class IngestionPipeline:
         Will use DEM processor when DEM is available,
         otherwise uses fallback elevation data.
         """
-        dem_path = os.path.join("data", "dem", "kedarnath_synthetic_dem.tif")
+        configured_dem_path = os.getenv("DEM_PATH")
+        dem_candidates = [
+            configured_dem_path,
+            os.path.join("data", "dem", "kedarnath_copernicus_glo30.tif"),
+        ]
 
-        if os.path.exists(dem_path):
+        for dem_path in dem_candidates:
+            if not dem_path or not os.path.exists(dem_path):
+                continue
             try:
                 from geospatial.terrain.dem_processor import DEMProcessor
                 from geospatial.terrain.feature_extractor import TerrainFeatureExtractor
@@ -233,13 +235,13 @@ class IngestionPipeline:
                 processor = DEMProcessor(dem_path).load()
                 extractor = TerrainFeatureExtractor(processor)
                 features = extractor.extract_features_for_locations(PILOT_LOCATIONS)
-                print(f"  Extracted terrain features for {len(features)} locations from DEM.")
+                print(f"  Extracted terrain features from {dem_path}.")
                 return features
             except Exception as e:
-                print(f"  [!] DEM processing failed: {e}")
+                print(f"  [!] DEM processing failed for {dem_path}: {e}")
 
-        # Fallback: use known elevation data
-        print("  Using fallback terrain data (no DEM file found).")
+        # Prefer validated point values over the synthetic surface for known locations.
+        print("  Using validated canonical terrain data (no measured DEM available).")
         return self._fallback_terrain_features()
 
     @staticmethod

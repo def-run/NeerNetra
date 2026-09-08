@@ -1,9 +1,7 @@
 """
-NeerNetra — Terrain Feature Extractor
-========================================
 Derives terrain features from DEM rasters for flood prediction.
 
-Features extracted (Section 6.3 — Terrain Features):
+Features extracted:
     - elevation
     - slope (degrees)
     - aspect (degrees, 0=N, 90=E, 180=S, 270=W)

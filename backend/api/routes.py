@@ -1,10 +1,3 @@
-"""
-NeerNetra -- API Routes (Phase 5 -- Full Implementation)
-===========================================================
-All endpoints are fully wired to the prediction, propagation,
-cascade, infrastructure, and LSET services.
-"""
-
 import json
 from datetime import datetime, timezone
 from typing import Optional

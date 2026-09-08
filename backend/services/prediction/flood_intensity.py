@@ -1,6 +1,4 @@
 """
-NeerNetra -- Flood Intensity Estimator
-==========================================
 Predicts flood intensity (Low / Moderate / Severe / Extreme) using a
 weighted composite score derived from the same features already used
 by the binary flood-risk classifier.
@@ -8,9 +6,6 @@ by the binary flood-risk classifier.
 Also provides infrastructure withstand assessment: given a flood
 intensity and an asset's vulnerability profile, estimate whether the
 infrastructure is likely to survive.
-
-This is a rule-based engineering approach (no separate ML model)
-because labelled intensity data is not available for training.
 """
 
 from typing import Optional

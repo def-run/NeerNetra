@@ -1,12 +1,8 @@
 """
-NeerNetra — Feature Builder
-==============================
-Assembles ML-ready feature vectors from raw data sources.
-
 Takes the combined dataset and produces clean, normalized feature
 matrices ready for model training and inference.
 
-Feature groups (Section 6.3):
+Feature groups:
   Environmental (12): rain windows, forecasts, intensity, acceleration, temp, humidity
   Terrain (5): elevation, slope, aspect, ruggedness, distance_to_waterbody
   Historical (3): flood_frequency, event_severity, flood_susceptibility

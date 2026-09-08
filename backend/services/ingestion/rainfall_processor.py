@@ -1,16 +1,9 @@
 """
-NeerNetra — Rainfall Processor
-=================================
-Computes rolling rainfall accumulation windows from hourly precipitation data.
-
-Windows (Section 6.3):
     rain_1h, rain_3h, rain_6h, rain_12h, rain_24h, rain_72h
 
 Also computes:
     rainfall_intensity     — current rainfall rate relative to recent average
     rainfall_acceleration  — rate of change in rainfall intensity
-
-These are the core environmental features for the ML flood prediction model.
 """
 
 import pandas as pd

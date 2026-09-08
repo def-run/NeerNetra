@@ -1,9 +1,6 @@
 """
-NeerNetra -- LSET Calculator
-================================
 Last Safe Evacuation Time estimation.
 
-From Section 7.9:
   LSET = Estimated Flood Arrival Time - Configured Safety Buffer
 
   Show:
@@ -11,8 +8,6 @@ From Section 7.9:
   - LSET
   - Buffer assumption
   - Confidence level
-
-  This is a PLANNING ESTIMATE, NOT a guarantee.
 """
 
 from datetime import datetime, timedelta

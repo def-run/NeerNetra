@@ -1,6 +1,4 @@
 """
-NeerNetra -- Prediction Service
-==================================
 Orchestrates the full prediction pipeline:
   1. Fetch weather data
   2. Compute rainfall features
@@ -9,8 +7,6 @@ Orchestrates the full prediction pipeline:
   5. Run flood dynamics (propagation, cascade, LSET)
   6. Assess confidence
   7. Return unified risk result
-
-This is the primary service called by the API endpoints.
 """
 import asyncio
 import os
@@ -71,6 +67,14 @@ STATIC_FEATURES = {
     for location in CANONICAL_LOCATIONS
 }
 
+TERRAIN_FEATURE_NAMES = (
+    "elevation",
+    "slope",
+    "aspect",
+    "terrain_ruggedness",
+    "distance_to_waterbody",
+)
+
 
 class PredictionService:
     """
@@ -92,6 +96,46 @@ class PredictionService:
         self._model_meta = None
         self._scaler = None
         self._feature_names = None
+        self._terrain_features = {}
+        self._terrain_data_available = False
+        self._load_terrain_features()
+
+    def _load_terrain_features(self):
+        """Load terrain features from the configured Copernicus DEM."""
+        dem_candidates = [
+            os.getenv("DEM_PATH"),
+            os.path.join("data", "dem", "kedarnath_copernicus_glo30.tif"),
+        ]
+
+        for dem_path in dem_candidates:
+            if not dem_path or not os.path.exists(dem_path):
+                continue
+            try:
+                from geospatial.terrain.dem_processor import DEMProcessor
+                from geospatial.terrain.feature_extractor import TerrainFeatureExtractor
+
+                processor = DEMProcessor(dem_path).load()
+                extractor = TerrainFeatureExtractor(processor)
+                extracted = extractor.extract_features_for_locations(CANONICAL_LOCATIONS)
+                self._terrain_features = {
+                    item["name"].lower(): item for item in extracted
+                }
+                self._terrain_data_available = True
+                print(f"[NeerNetra] Terrain features loaded from {dem_path}")
+                return
+            except Exception as exc:
+                print(f"[NeerNetra] Terrain loading failed for {dem_path}: {exc}")
+
+        print("[NeerNetra] Using canonical terrain features; no DEM was loaded")
+
+    def _get_static_features(self, location_name: Optional[str]) -> dict:
+        """Combine DEM terrain values with non-terrain static risk features."""
+        static = dict(STATIC_FEATURES.get(location_name, {}))
+        terrain = self._terrain_features.get(location_name, {})
+        for field in TERRAIN_FEATURE_NAMES:
+            if terrain.get(field) is not None:
+                static[field] = terrain[field]
+        return static
 
     def _load_model(self):
         """Load the saved ML model."""
@@ -135,7 +179,7 @@ class PredictionService:
         """
         self._load_model()
         location_name = self._find_nearest_location(lat, lon)
-        static = STATIC_FEATURES.get(location_name, {})
+        static = self._get_static_features(location_name)
 
         # 1. Fetch live weather
         try:
@@ -222,7 +266,7 @@ class PredictionService:
             model_probability=probability,
             data_age_minutes=5 if weather_ok else 120,
             feature_completeness=0.95 if weather_ok else 0.6,
-            terrain_data_available=bool(static),
+            terrain_data_available=self._terrain_data_available,
             historical_data_available=True,
             forecast_available=weather_ok,
         )

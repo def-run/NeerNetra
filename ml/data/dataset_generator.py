@@ -1,25 +1,3 @@
-"""
-NeerNetra — Synthetic Training Dataset Generator
-====================================================
-Generates a realistic labeled dataset for flood prediction model training.
-
-Since we don't have a massive historical labeled dataset, this module
-creates synthetic observations that follow realistic patterns observed
-in the Kedarnath / Mandakini Valley region:
-
-- Flood events correlate with high rainfall, steep terrain, high susceptibility
-- Non-flood conditions are the majority class (imbalanced, like reality)
-- Feature distributions are modeled after real-world ranges
-
-The dataset includes all features from Section 6.3:
-  Environmental: rain_1h..rain_72h, forecast_rain_3h/6h, intensity, acceleration, temp, humidity
-  Terrain: elevation, slope, aspect, terrain_ruggedness, distance_to_waterbody
-  Historical: historical_flood_frequency, historical_event_severity, historical_flood_susceptibility
-  Cascade: landslide_susceptibility, blockage_indicator, distance_to_road, road_exposure, bridge_exposure
-
-Target: flood_event (0 = no flood, 1 = flood)
-"""
-
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta

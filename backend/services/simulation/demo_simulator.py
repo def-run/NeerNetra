@@ -1,6 +1,4 @@
 """
-NeerNetra -- Demo Simulator (Phase 8)
-========================================
 Simulates the 2013 Kedarnath disaster as a time-stepped scenario.
 Provides scripted escalation from normal conditions to catastrophic flood,
 allowing judges to see the full system response in real-time.

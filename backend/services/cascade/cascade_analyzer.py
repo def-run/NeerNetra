@@ -1,16 +1,5 @@
 """
-NeerNetra -- Cascade Analyzer
-================================
 Basic landslide -> blockage -> flood cascade logic.
-
-From Section 7.7:
-  High rainfall / terrain conditions
-    -> Landslide susceptibility
-    -> Possible blockage
-    -> Increased downstream flood risk
-
-Implementation uses rule-based thresholds. This is a basic scenario
-model, NOT a physically complete landslide simulation.
 """
 
 from typing import Optional

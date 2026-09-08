@@ -1,18 +1,11 @@
 """
-NeerNetra — Model Evaluator
-==============================
-Comprehensive evaluation metrics for flood prediction models.
-
-Required metrics (Section 6.7):
+Required metrics:
   - Precision
   - Recall
   - F1-score
   - ROC-AUC
   - PR-AUC
   - Confusion matrix
-
-"For disaster prediction, recall for dangerous flood events is
- particularly important, but increasing recall may increase false alarms."
 
 Also reports:
   - Feature importance ranking

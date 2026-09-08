@@ -1,6 +1,4 @@
 """
-NeerNetra — Data Seeder
-=========================
 Seeds the PostGIS database with historical flood events, landslide
 susceptibility data, and infrastructure geometries.
 

@@ -1,6 +1,4 @@
 """
-NeerNetra — Synthetic DEM Generator
-=====================================
 Generates a realistic synthetic Digital Elevation Model (DEM) for the
 Kedarnath / Mandakini Valley pilot region.
 

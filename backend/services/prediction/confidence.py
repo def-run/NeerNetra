@@ -1,9 +1,6 @@
 """
-NeerNetra -- Confidence / Uncertainty Estimator
-==================================================
 Assesses confidence and uncertainty in flood predictions.
 
-From Section 7.3:
   Factors considered:
   1. Input-data completeness
   2. Recency of observations
