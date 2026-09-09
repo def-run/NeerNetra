@@ -48,16 +48,6 @@ docker/volumes/
 *.sql.bak
 
 # --- Data files (large) ---
-data/rainfall/*.hdf5
-data/rainfall/*.nc
-data/dem/*.tif
-data/dem/*.geotiff
-data/processed/*.parquet
-data/processed/*.csv
-*.tif
-*.geotiff
-*.hdf5
-*.nc
 
 # --- ML Models (large) ---
 ml/saved_models/*.pkl
